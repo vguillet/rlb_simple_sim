@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'source_sim = Simple_sim.Simple_sim:main'
+            'source_sim = rlb_simple_sim.Simple_sim:main'
         ],
     },
 )
