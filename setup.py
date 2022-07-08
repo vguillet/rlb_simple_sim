@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'Simple_sim'
+package_name = 'rlb_simple_sim'
 
 setup(
     name=package_name,
