@@ -3,7 +3,11 @@ import os
 import select
 import sys
 import rclpy
+import time
 from rclpy.node import Node
+from rclpy.time import Time
+from rclpy.clock import ClockType
+
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from sensor_msgs.msg import JointState
@@ -29,7 +33,8 @@ class Simple_sim(Node):
             qos_profile=qos
             )
         
-        self.goal_emission_interval = 5.
+        self.goal_emission_interval = .5
+        # self.goal_emission_interval = 5.
 
         timer_period = self.goal_emission_interval  # seconds
         self.timer = self.create_timer(
@@ -61,6 +66,28 @@ class Simple_sim(Node):
             {"robot_id": "Turtle_3", "goal_sequence_id": "222", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.)]},
             {"robot_id": "Turtle_3", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0., y=0.), Point(x=1., y=1.)]},
             {"robot_id": "Turtle_3", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1., y=-0.)]},
+
+            {"robot_id": "Turtle_4", "goal_sequence_id": "11", "meta_action": "add", "priority": 0., "sequence": [Point(x=1.2, y=1.), Point(x=-1., y=1.5), Point(x=-1.7, y=-1.), Point(x=1., y=-1.)]},
+            {"robot_id": "Turtle_4", "goal_sequence_id": "222", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.)]},
+            {"robot_id": "Turtle_4", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0., y=0.), Point(x=1., y=1.)]},
+            {"robot_id": "Turtle_4", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1., y=-0.)]},
+
+            {"robot_id": "Turtle_5", "goal_sequence_id": "11", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.3), Point(x=-1.5, y=-1.), Point(x=1., y=-1.3)]},
+            {"robot_id": "Turtle_5", "goal_sequence_id": "222", "meta_action": "add", "priority": 0., "sequence": [Point(x=1.7, y=1.), Point(x=-2., y=1.1)]},
+            {"robot_id": "Turtle_5", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0.3, y=0.), Point(x=1.2, y=1.)]},
+            {"robot_id": "Turtle_5", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1.1, y=-0.)]},
+        
+            # {"robot_id": "Turtle_6", "goal_sequence_id": "11", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.), Point(x=-1., y=-1.), Point(x=1., y=-1.)]},
+            # {"robot_id": "Turtle_6", "goal_sequence_id": "222", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.)]},
+            # {"robot_id": "Turtle_6", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0., y=0.), Point(x=1., y=1.)]},
+            # {"robot_id": "Turtle_6", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1., y=-0.)]},
+            
+            # {"robot_id": "Turtle_1", "goal_sequence_id": "11", "meta_action": "add", "priority": 0., "sequence": [Point(x=0.67, y=.67), Point(x=-0.67, y=0.67), Point(x=-0.67, y=-0.67), Point(x=0.67, y=-0.67)]},            
+            # {"robot_id": "Turtle_1", "goal_sequence_id": "222", "meta_action": "add", "priority": 0., "sequence": [Point(x=1., y=1.), Point(x=-1., y=1.)]},
+            # {"robot_id": "Turtle_1", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0., y=0.), Point(x=1., y=1.)]},
+            # {"robot_id": "Turtle_1", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1., y=-0.)]},
+            # {"robot_id": "Turtle_1", "goal_sequence_id": "1", "meta_action": "add", "priority": 0., "sequence": [Point(x=0.0, y=.0), Point(x=2., y=0.0)]},            
+
         ]
         
         print(self.goal_sequence)
@@ -75,7 +102,8 @@ class Simple_sim(Node):
 
     def goal_sequence_publisher_callback(self):
         # -> Fetch random goal sequence
-        goal_details = random.choice(self.goal_sequence)
+        goal_id  = random.randint(0, len(self.goal_sequence)-1)
+        goal_details = self.goal_sequence[goal_id]
 
         # -> Create message
         goal = Goal(
