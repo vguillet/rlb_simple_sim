@@ -87,7 +87,6 @@ class Simple_sim(Node):
             # {"robot_id": "Turtle_1", "goal_sequence_id": "333", "meta_action": "add", "priority": 1., "sequence": [Point(x=0., y=0.), Point(x=1., y=1.)]},
             # {"robot_id": "Turtle_1", "goal_sequence_id": "444", "meta_action": "add", "priority": 20., "sequence": [Point(x=1., y=-0.)]},
             # {"robot_id": "Turtle_1", "goal_sequence_id": "1", "meta_action": "add", "priority": 0., "sequence": [Point(x=0.0, y=.0), Point(x=2., y=0.0)]},            
-
         ]
         
         print(self.goal_sequence)
