@@ -23,12 +23,12 @@ import os
 from abc import abstractmethod
 from typing import List, Optional
 from datetime import datetime, timedelta
-from random import randint
-import random
 from json import dumps, loads
 from pprint import pprint, pformat
 import warnings
 from copy import deepcopy
+from math import ceil
+from functools import partial
 
 # Libs
 import numpy as np
@@ -42,11 +42,16 @@ import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
 from geometry_msgs.msg import Twist, PoseStamped, Point
+import numpy as np
 
 # Local Imports
 from orchestra_config.orchestra_config import *     # KEEP THIS LINE, DO NOT REMOVE
 from maaf_msgs.msg import TeamCommStamped
-from maaf_allocation_node.node_config import *
+from .Scenario import Scenario
+from maaf_allocation_node.fleet_dataclasses import Agent, Fleet
+from maaf_allocation_node.tools import euler_from_quaternion
+from maaf_allocation_node.state_dataclasses import Agent_state
+from controller_graph.results_gen import Results
 
 ######################################################################################################
 
@@ -54,6 +59,27 @@ from maaf_allocation_node.node_config import *
 class RLB_simple_sim(Node):
     def __init__(self):
         super().__init__('Simple_sim')
+
+        # -> Get launch parameters configuration
+        self.declare_parameters(
+            namespace="",
+            parameters=[
+                ("scenario_id", "simple_sim"),
+            ]
+        )
+
+        scenario_id = self.get_parameter("scenario_id").get_parameter_value().string_value
+
+        self.scenario = Scenario(scenario_id=scenario_id)
+
+        self.fleet = Fleet()
+
+        self.results = Results(
+            fleet=self.fleet,
+            scenario=self.scenario
+        )
+
+        self.goto_tasks = self.scenario.goto_tasks
 
         # ---------------------------------- Subscribers
         # ---------- epoch
@@ -64,13 +90,40 @@ class RLB_simple_sim(Node):
             qos_profile=qos_sim_epoch
         )
 
-        # ---------- tasks
-        self.task_sub = self.create_subscription(
+        # ---------- goal
+        self.goals_sub = self.create_subscription(
             msg_type=TeamCommStamped,
-            topic=topic_tasks,
-            callback=self.task_msg_subscriber_callback,
-            qos_profile=qos_tasks
+            topic=topic_goals,
+            callback=self.goal_callback,
+            qos_profile=qos_goal
         )
+
+        # # ---------- tasks
+        # self.task_sub = self.create_subscription(
+        #     msg_type=TeamCommStamped,
+        #     topic=topic_tasks,
+        #     callback=self.task_msg_subscriber_callback,
+        #     qos_profile=qos_tasks
+        # )
+
+        # ---------- fleet_msgs
+        self.fleet_msgs_sub = self.create_subscription(
+            msg_type=TeamCommStamped,
+            topic=topic_fleet_msgs,
+            callback=self.fleet_msgs_callback,
+            qos_profile=qos_fleet_msgs
+        )
+
+        # ---------- sim_events_instructions
+        self.sim_events_instructions_sub = self.create_subscription(
+            msg_type=TeamCommStamped,
+            topic=topic_sim_events_instructions,
+            callback=self.sim_events_instructions_callback,
+            qos_profile=qos_sim_events_instructions
+        )
+
+        # ---------- /robot_.../pose
+        self.robot_pose_sub = {}
 
         # ---------------------------------- Publishers
         # ---------- tasks
@@ -80,83 +133,12 @@ class RLB_simple_sim(Node):
             qos_profile=qos_tasks
         )
 
-        # ---------------- Generate GOTOs
-        def generate_task(action_at_loc: int, target_agent_id: str, epoch: int) -> dict:
-            return {
-                "epoch": epoch,
-                "creator_id": target_agent_id,
-                "id": str(random.randint(0, 1000000)),
-                "type": "GOTO",
-                "meta_action": "pending",
-                "priority": 0.0,
-                "affiliations": "base",
-                "instructions": {
-                    "x": random.randint(0, env_size-1),
-                    "y": random.randint(0, env_size-1),
-                    "ACTION_AT_LOC": action_at_loc
-                }
-            }
-
-        # -> Generate GOTO tasks schedule
-        no_task_task_schedule = []
-        action_1_task_schedule = []
-        action_2_task_schedule = []
-
-        # > Initial tasks announcement
-        i = 0
-        task_type = 0
-
-        while i != initial_tasks_announcement:
-            i += 1
-
-            if task_type == 0:
-                no_task_task_schedule.append(0)
-            elif task_type == 1:
-                action_1_task_schedule.append(0)
-            elif task_type == 2:
-                action_2_task_schedule.append(0)
-
-            task_type += 1
-
-        # > Top up task schedules to match the total number of tasks necessary
-        while len(no_task_task_schedule) < no_task_task_count:
-            no_task_task_schedule.append(random.randint(1, release_max_epoch))
-
-        while len(action_1_task_schedule) < action_1_task_count:
-            action_1_task_schedule.append(random.randint(1, release_max_epoch))
-
-        while len(action_2_task_schedule) < action_2_task_count:
-            action_2_task_schedule.append(random.randint(1, release_max_epoch))
-
-        # -> Generate GOTO tasks
-        self.goto_tasks = []
-
-        for i in range(no_task_task_count):
-            self.goto_tasks.append(
-                generate_task(
-                    action_at_loc=NO_TASK,
-                    target_agent_id=random.choice(agent_lst),
-                    epoch=no_task_task_schedule[i]
-                )
-            )
-
-        for i in range(action_1_task_count):
-            self.goto_tasks.append(
-                generate_task(
-                    action_at_loc=ACTION_1,
-                    target_agent_id=random.choice(agent_lst),
-                    epoch=action_1_task_schedule[i]
-                )
-            )
-
-        for i in range(action_2_task_count):
-            self.goto_tasks.append(
-                generate_task(
-                    action_at_loc=ACTION_2,
-                    target_agent_id=random.choice(agent_lst),
-                    epoch=action_2_task_schedule[i]
-                )
-            )
+        # ---------- simulator_signals
+        self.simulator_signals_pub = self.create_publisher(
+            msg_type=TeamCommStamped,
+            topic=topic_simulator_signals,
+            qos_profile=qos_simulator_signals
+        )
 
         self.get_logger().info("Simple_sim node initialised")
 
@@ -194,7 +176,78 @@ class RLB_simple_sim(Node):
 
         return msg
 
-    def task_msg_subscriber_callback(self, task_msg: TeamCommStamped):
+    def fleet_msgs_callback(self, msg: TeamCommStamped):
+        self.results["total_fleet_msgs_count"] += 1
+
+    def goal_callback(self, msg: TeamCommStamped):
+        """
+        Callback for the goal subscription.
+        """
+
+        msg_memo = loads(msg.memo)
+
+        # -> If the agent is not in the fleet, add it
+        if msg.source not in self.fleet.ids:
+            self.robot_pose_sub[msg.source] = self.create_subscription(
+                msg_type=PoseStamped,
+                topic=f"/{msg.source}{topic_pose}",
+                callback=partial(self.pose_callback, msg.source),
+                qos_profile=qos_pose
+            )
+
+            self.fleet.add_agent(agent=msg_memo["agent"])
+
+            # -> Add entry in histories
+            self.results["pose_history"][msg.source] = []
+            self.results["move_history"][msg.source] = []
+
+        # -> Update the agent state
+        if msg.meta_action == "assign":
+            self.fleet[msg.source].local["goal"] = msg_memo["task"]
+
+        elif msg.meta_action == "unassign":
+            self.fleet[msg.source].local["goal"] = None
+
+        else:
+            self.fleet[msg.source].local["goal"] = None
+
+        self.results["total_goal_msgs_count"] += 1
+
+    def pose_callback(self, agent_id, pose_msg: PoseStamped):
+        """
+        Callback for the pose subscriber
+
+        :param pose_msg: PoseStamped message
+        """
+        # -> Convert quaternion to euler
+        u, v, w = euler_from_quaternion(quat=pose_msg.pose.orientation)
+
+        # -> Update state
+        new_state = Agent_state.from_dict(
+            agent_dict={
+                "agent_id": agent_id,
+                "x": pose_msg.pose.position.x,
+                "y": pose_msg.pose.position.y,
+                "z": pose_msg.pose.position.z,
+                "u": u,
+                "v": v,
+                "w": w,
+                "timestamp": pose_msg.header.stamp.sec + pose_msg.header.stamp.nanosec * 1e-9
+            },
+            allow_incomplete=True
+        )
+
+        if agent_id not in self.fleet.ids:
+            # self.get_logger().warning(f"Agent {agent_id} not found in fleet")
+            return
+
+        if self.fleet[agent_id].state != new_state:
+            self.fleet[agent_id].state = new_state
+
+            # -> Log agent move
+            self.results['move_history'][agent_id].append((self.fleet[agent_id].state.x, self.fleet[agent_id].state.y))
+
+    def sim_events_instructions_callback(self, task_msg: TeamCommStamped):
         """
         Callback for task subscription.
         """
@@ -206,12 +259,21 @@ class RLB_simple_sim(Node):
         task_dict = loads(task_msg.memo)
 
         if task_msg.meta_action == "completed":
+            # -> Log allocation completion
+            self.results["allocation"][task_dict["id"]] = {
+                "agent_id": task_msg.source,
+                "epoch": self.sim_epoch,
+                "goal": task_dict
+            }
+
             # -> If no action at location, do nothing
-            if task_dict["instructions"]["ACTION_AT_LOC"] == NO_TASK:
+            if task_dict["instructions"]["ACTION_AT_LOC"] == "NO_TASK":
+                # -> Publish task completion
+                self.task_pub.publish(msg=task_msg)
                 return
 
             # -> Construct corresponding ACTION task
-            task_msg = self.get_task_msg(
+            action_task_msg = self.get_task_msg(
                 meta_action="pending",
                 agent_id=task_msg.target,
                 task_id=task_dict["id"] + "0",
@@ -221,21 +283,26 @@ class RLB_simple_sim(Node):
                 instructions={
                     "x": task_dict["instructions"]["x"],
                     "y": task_dict["instructions"]["y"],
-                    "ACTION_AT_LOC": NO_TASK
+                    "ACTION_AT_LOC": "NO_TASK"
                 }
             )
 
-            # -> Publish task
-            self.task_pub.publish(msg=task_msg)
+            # -> Publish action task
+            self.task_pub.publish(msg=action_task_msg)
+
+        # -> Publish task completion
+        self.task_pub.publish(msg=task_msg)
 
     def sim_epoch_callback(self, msg):
+        if self.results["sim_start_time"] is None:
+            self.results["sim_start_time"] = datetime.now()
+
         sim_state = loads(msg.memo)
 
-        sim_epoch = sim_state["epoch"]
-        print(f">>>>>>>>>>>>>>> Sim epoch: {sim_epoch}")
+        self.sim_epoch = sim_state["epoch"]
 
         for goto_task in self.goto_tasks:
-            if goto_task["epoch"] == sim_epoch:
+            if goto_task["epoch"] == self.sim_epoch:
                 task_msg = self.get_task_msg(
                     meta_action="pending",
                     agent_id=goto_task["creator_id"],
@@ -247,11 +314,62 @@ class RLB_simple_sim(Node):
                 )
 
                 print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                print(f"++ Task {goto_task['id']} > {goto_task['type']} emitted: {goto_task['instructions']} for {goto_task['creator_id']} ++")
+                print(f"++ EPOCH {self.sim_epoch}: Task {goto_task['id']} > {goto_task['type']} emitted: {goto_task['instructions']} for {goto_task['creator_id']} ++")
                 print(f"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
                 # -> Publish instruction msg to robot
                 self.task_pub.publish(msg=task_msg)
+
+        # -> Log agent pose
+        for agent in self.fleet:
+            self.results["pose_history"][agent.id].append((agent.state.x, agent.state.y))
+
+        # -> Get run stats
+        total_moves = sum([len(self.results["move_history"][agent.id]) for agent in self.fleet])
+        try:
+            longest_moves = max([len(self.results["move_history"][agent.id]) for agent in self.fleet])
+        except ValueError:
+            longest_moves = 0
+
+        self.get_logger().info(f"-------------------------------------------")
+        self.get_logger().info(f" > Sim step {self.sim_epoch}")
+        self.get_logger().info(f"    -  Total moves: {total_moves}")
+        self.get_logger().info(
+            f"    -  Longest move: {longest_moves} ({[agent.id for agent in self.fleet if len(self.results['move_history'][agent.id]) == longest_moves]})")
+        self.get_logger().info(f"    -  Total fleet messages: {self.results['total_fleet_msgs_count']}")
+        self.get_logger().info(
+            f"    -  Total allocations completed: {len(self.results['allocation'])}/{self.results['total_task_count']}")
+        self.get_logger().info(f" Runtime: {datetime.now() - self.results['sim_start_time']}")
+        self.get_logger().info(f"-----------------")
+        self.get_logger().info(f"Current goals:")
+        for agent in self.fleet:
+            if agent.local["goal"] is not None:
+                self.get_logger().info(f"    - {agent.id}: {agent.local['goal']['id']}")
+
+        if len(self.results["allocation"]) == self.results["total_task_count"]:
+            self.results["last_epoch"] = self.sim_epoch
+            self.results["sim_end_time"] = datetime.now()
+
+            self.get_logger().info(f"    -  End of simulation")
+            self.get_logger().info(f"-------------------------------------------")
+
+            run_recap = self.results.generate_run_recap()
+            self.get_logger().info(f"\n\n{run_recap}")
+
+            self.get_logger().info(f" >> Dumping results to file")
+            self.results.dump_results()
+
+            # -> Publish terminate simulator nodes signal
+            self.simulator_signals_pub.publish(msg=TeamCommStamped(
+                source="",
+                target="",
+                meta_action="terminate",
+                memo=""
+                )
+            )
+
+            # -> Terminate node
+            self.destroy_node()
 
 
 def main(args=None):
