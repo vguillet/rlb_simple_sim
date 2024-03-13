@@ -20,6 +20,7 @@ CAF:
 
 # Built-in/Generic Imports
 import os
+import sys
 from abc import abstractmethod
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -51,7 +52,7 @@ from .Scenario import Scenario
 from maaf_allocation_node.fleet_dataclasses import Agent, Fleet
 from maaf_allocation_node.tools import euler_from_quaternion
 from maaf_allocation_node.state_dataclasses import Agent_state
-from controller_graph.results_gen import Results
+from .results_gen import Results
 
 ######################################################################################################
 
@@ -70,7 +71,7 @@ class RLB_simple_sim(Node):
 
         scenario_id = self.get_parameter("scenario_id").get_parameter_value().string_value
 
-        self.scenario = Scenario(scenario_id=scenario_id)
+        self.scenario = Scenario(scenario_id=scenario_id, load_only=True, logger=self.get_logger())
 
         self.fleet = Fleet()
 
@@ -140,7 +141,7 @@ class RLB_simple_sim(Node):
             qos_profile=qos_simulator_signals
         )
 
-        self.get_logger().info("Simple_sim node initialised")
+        self.get_logger().info(f"Simple_sim node initialised - Scenario ID: {scenario_id}")
 
     def get_task_msg(self,
                      meta_action,
@@ -258,40 +259,55 @@ class RLB_simple_sim(Node):
         # -> Unpack msg
         task_dict = loads(task_msg.memo)
 
-        if task_msg.meta_action == "completed":
+        if task_msg.meta_action == "completed": # TODO: Add support for more meta actions
+            # -> Save termination epoch
+            self.results["task_history"][task_dict["id"]]["termination_epoch"] = self.sim_epoch
+
             # -> Log allocation completion
             self.results["allocation"][task_dict["id"]] = {
-                "agent_id": task_msg.source,
+                "agent_id": task_msg.target,
                 "epoch": self.sim_epoch,
                 "goal": task_dict
             }
 
             # -> If no action at location, do nothing
-            if task_dict["instructions"]["ACTION_AT_LOC"] == "NO_TASK":
-                # -> Publish task completion
-                self.task_pub.publish(msg=task_msg)
-                return
+            if task_dict["instructions"]["ACTION_AT_LOC"] != "NO_TASK":
+                # -> Construct corresponding ACTION task
+                action_task_msg = self.get_task_msg(
+                    meta_action="pending",
+                    agent_id=task_msg.target,
+                    task_id=task_dict["id"] + "'",
+                    affiliations=task_dict["affiliations"],
+                    priority=task_dict["priority"],
+                    task_type=task_dict["instructions"]["ACTION_AT_LOC"],
+                    instructions={
+                        "x": task_dict["instructions"]["x"],
+                        "y": task_dict["instructions"]["y"],
+                        "ACTION_AT_LOC": "NO_TASK"
+                    }
+                )
 
-            # -> Construct corresponding ACTION task
-            action_task_msg = self.get_task_msg(
-                meta_action="pending",
-                agent_id=task_msg.target,
-                task_id=task_dict["id"] + "0",
-                affiliations=task_dict["affiliations"],
-                priority=task_dict["priority"],
-                task_type=task_dict["instructions"]["ACTION_AT_LOC"],
-                instructions={
-                    "x": task_dict["instructions"]["x"],
-                    "y": task_dict["instructions"]["y"],
-                    "ACTION_AT_LOC": "NO_TASK"
+                # -> Publish action task
+                self.task_pub.publish(msg=action_task_msg)
+
+                # -> Save task in history
+                self.results["task_history"][task_dict["id"] + "'"] = {
+                    "type": task_dict["instructions"]["ACTION_AT_LOC"],
+                    "instructions": {
+                        "x": task_dict["instructions"]["x"],
+                        "y": task_dict["instructions"]["y"],
+                        "ACTION_AT_LOC": "NO_TASK"
+                    },
+                    "creator_id": task_msg.target,
+                    "affiliations": task_dict["affiliations"],
+                    "priority": task_dict["priority"],
+                    "creation_timestamp": self.sim_epoch,
+                    "release_epoch": self.sim_epoch,
+                    "termination_epoch": None
                 }
-            )
 
-            # -> Publish action task
-            self.task_pub.publish(msg=action_task_msg)
-
-        # -> Publish task completion
-        self.task_pub.publish(msg=task_msg)
+            # -> Publish task completion
+            self.task_pub.publish(msg=task_msg)
 
     def sim_epoch_callback(self, msg):
         if self.results["sim_start_time"] is None:
@@ -316,6 +332,18 @@ class RLB_simple_sim(Node):
                 print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 print(f"++ EPOCH {self.sim_epoch}: Task {goto_task['id']} > {goto_task['type']} emitted: {goto_task['instructions']} for {goto_task['creator_id']} ++")
                 print(f"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+                # -> Save task in history
+                self.results["task_history"][goto_task["id"]] = {
+                    "type": goto_task["type"],
+                    "instructions": goto_task["instructions"],
+                    "creator_id": goto_task["creator_id"],
+                    "affiliations": goto_task["affiliations"],
+                    "priority": goto_task["priority"],
+                    "creation_timestamp": self.sim_epoch,
+                    "release_epoch": self.sim_epoch,
+                    "termination_epoch": None,
+                }
 
                 # -> Publish instruction msg to robot
                 self.task_pub.publish(msg=task_msg)
@@ -363,13 +391,18 @@ class RLB_simple_sim(Node):
             self.simulator_signals_pub.publish(msg=TeamCommStamped(
                 source="",
                 target="",
-                meta_action="terminate",
+                meta_action="order 66",
                 memo=""
                 )
             )
 
+            self.get_logger().info("Received order 66: Terminating simulation")
+
             # -> Terminate node
             self.destroy_node()
+
+            # -> Terminate script
+            sys.exit()
 
 
 def main(args=None):

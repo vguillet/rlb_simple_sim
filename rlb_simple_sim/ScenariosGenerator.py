@@ -47,38 +47,48 @@ PAIRS_GEN = 1
 
 
 class ScenariosGenerator:
-    def __init__(self):
-        seed = 0
-        self.rng = np.random.RandomState(seed=seed)
+    def __init__(self, scenarios_count=1):
+        self.seed = 0
+        self.rng = np.random.RandomState(seed=self.seed)
 
-        self.scenarios_count = 10
+        self.scenarios_count = scenarios_count
 
         # ----- Allocation protocol
         self.recompute_bids_on_state_change = True
         self.with_interceding = False
+        self.intercession_target = "full"
 
         # ----- Environment
-        self.env_connectivity_range = [0.55, 0.85]
-        self.env_size_range = [16, 19]
+        self.env_connectivity_range = [0.90, 0.90]
+        self.env_size_range = [19, 19]
         
         # ----- Tasks
-        self.goto_tasks_count_range = [50, 150]
-        
-        self.no_action_tasks_fraction_range = [1, 3]
-        self.action1_tasks_fraction_range = [1, 3]
-        self.action2_tasks_fraction_range = [1, 3]
+        self.goto_tasks_count_range = [50, 50]
 
-        self.initial_tasks_announcement_fraction_range = [0.1, 0.5]
-        self.release_max_epoch_range = [100, 200]
+        self.tasks_count_config = [
+            [0, 25, 25],
+            [10, 20, 20],
+            [10, 35, 5],
+            [10, 39, 1],
+        ]
+
+        self.no_action_tasks_fraction_range = [0, 1]
+        self.action1_tasks_fraction_range = [1, 2]
+        self.action2_tasks_fraction_range = [1, 2]
+
+        self.initial_tasks_announcement_fraction_range = [0.1, 0.1]
+        self.release_max_epoch_range = [60, 60]
 
         # ----- Agents
         self.agent_lst = ["Turtle_1", "Turtle_2", "Turtle_3", "Turtle_4"]
         self.skills = ["GOTO", "ACTION_1", "ACTION_2"]
 
-        self.action_1_freq_range = [1, 3]
-        self.action_2_freq_range = [1, 3]
-        self.no_action_freq_range = [1, 3]
-        
+        self.intercession_targets = {
+            "no": [],
+            "partial": ["GOTO", "ACTION_1"],
+            "full": ["GOTO", "ACTION_1", "ACTION_2"]
+        }
+
         self.fleets_skillsets = [
             {
                 "Turtle_1": ["GOTO", "ACTION_1"],
@@ -92,18 +102,18 @@ class ScenariosGenerator:
                 "Turtle_3": ["GOTO", "ACTION_2"],
                 "Turtle_4": ["GOTO", "ACTION_2"],
             },
-            {
-                "Turtle_1": ["GOTO", "ACTION_1"],
-                "Turtle_2": ["GOTO"],
-                "Turtle_3": ["GOTO", "ACTION_2"],
-                "Turtle_4": ["GOTO", "ACTION_2"],
-            },
-            {
-                "Turtle_1": ["GOTO", "ACTION_1"],
-                "Turtle_2": ["GOTO"],
-                "Turtle_3": ["GOTO"],
-                "Turtle_4": ["GOTO", "ACTION_2"],
-            }
+            # {
+            #     "Turtle_1": ["GOTO", "ACTION_1"],
+            #     "Turtle_2": ["GOTO"],
+            #     "Turtle_3": ["GOTO", "ACTION_2"],
+            #     "Turtle_4": ["GOTO", "ACTION_2"],
+            # },
+            # {
+            #     "Turtle_1": ["GOTO", "ACTION_1"],
+            #     "Turtle_2": ["GOTO"],
+            #     "Turtle_3": ["GOTO"],
+            #     "Turtle_4": ["GOTO", "ACTION_2"],
+            # }
         ]
         
         self.bids_functions = [
@@ -111,20 +121,20 @@ class ScenariosGenerator:
             "graph_weighted_manhattan_distance_bid"
         ]
         
-        self.fleet_bids_mechanisms = [
-            {
+        self.fleet_bids_mechanisms = {
+            "interceding": {
                 "Turtle_1": "anticipated_action_task_interceding_agent",
                 "Turtle_2": "graph_weighted_manhattan_distance_bid",
                 "Turtle_3": "graph_weighted_manhattan_distance_bid",
                 "Turtle_4": "graph_weighted_manhattan_distance_bid",
             },
-            {
+            "no_interceding": {
                 "Turtle_1": "graph_weighted_manhattan_distance_bid",
                 "Turtle_2": "graph_weighted_manhattan_distance_bid",
                 "Turtle_3": "graph_weighted_manhattan_distance_bid",
                 "Turtle_4": "graph_weighted_manhattan_distance_bid",
             }
-        ]
+        }
 
     def gen_scenarios_config(self,
                             gen_type: int = SOLO_GEN,
@@ -150,7 +160,7 @@ class ScenariosGenerator:
         for i in range(len(tasks_types_ratios_configs)):
             self.rng.shuffle(tasks_types_ratios_configs[i])
         
-        initial_tasks_announcement_configs = np.linspace(self.initial_tasks_announcement_fraction_range[0], self.initial_tasks_announcement_fraction_range[1], self.scenarios_count, dtype=int)
+        initial_tasks_announcement_configs = np.linspace(self.initial_tasks_announcement_fraction_range[0], self.initial_tasks_announcement_fraction_range[1], self.scenarios_count)
         self.rng.shuffle(initial_tasks_announcement_configs)
         
         release_max_epoch_configs = np.linspace(self.release_max_epoch_range[0], self.release_max_epoch_range[1], self.scenarios_count, dtype=int)
@@ -159,13 +169,12 @@ class ScenariosGenerator:
         # ----- Agents
         fleets_skillsets_configs = np.linspace(0, len(self.fleets_skillsets)-1, self.scenarios_count, dtype=int)
         self.rng.shuffle(fleets_skillsets_configs)
-        
-        fleets_bids_mechanisms_configs = np.linspace(0, len(self.fleet_bids_mechanisms)-1, self.scenarios_count, dtype=int)
-        self.rng.shuffle(fleets_bids_mechanisms_configs)
 
         # -> Generate scenario files
+        scenarios = {}
+
         for i in range(self.scenarios_count):
-            self.gen_scenario_config(
+            new_scenarios = self.gen_scenario_config(
                 scenario_id=f"Scenario_{i}",
                 env_connectivity=env_connectivity_configs[i],
                 env_size=env_size_configs[i],
@@ -178,12 +187,13 @@ class ScenariosGenerator:
                 initial_tasks_announcement=initial_tasks_announcement_configs[i],
                 release_max_epoch=release_max_epoch_configs[i],
                 fleet_skillsets=self.fleets_skillsets[fleets_skillsets_configs[i]],
-                fleet_bids_mechanisms=self.fleet_bids_mechanisms[fleets_bids_mechanisms_configs[i]],
-                recompute_bids_on_state_change=self.recompute_bids_on_state_change,
-                with_interceding=self.with_interceding,
                 gen_type=gen_type,
                 save_to_file=save_to_file
             )
+
+            scenarios = scenarios | new_scenarios
+
+        return scenarios
 
     def latin_hypercube_sampling(self, n: int, k: int) -> np.ndarray:
         """
@@ -213,13 +223,110 @@ class ScenariosGenerator:
                             initial_tasks_announcement: int,
                             release_max_epoch: int,
                             fleet_skillsets: dict,
-                            fleet_bids_mechanisms: dict,
-                            recompute_bids_on_state_change: bool = True,
-                            with_interceding: bool = False,
                             gen_type: int = SOLO_GEN,
                             save_to_file: bool = False,
                             ) -> dict:
 
+        # ---------------- Save config
+        scenario_config = {
+            "seed": self.seed,
+            "scenario_id": scenario_id,
+            "scenario_type": "gridworld",
+            "env_connectivity": env_connectivity,
+            "env_size": env_size,
+            "goto_tasks_count": goto_tasks_count,
+            "initial_tasks_announcement": initial_tasks_announcement,
+            "release_max_epoch": release_max_epoch,
+
+            "agent_lst": self.agent_lst,
+            "fleet_skillsets": fleet_skillsets,
+        }
+
+        scenarios = {}
+
+        if gen_type == SOLO_GEN:
+            # -> Generate a single scenario with the given parameters
+            scenario_config["recompute_bids_on_state_change"] = self.recompute_bids_on_state_change
+            scenario_config["intercession_targets"] = self.intercession_targets[self.intercession_target]
+            scenario_config["with_interceding"] = self.with_interceding
+
+            if self.with_interceding:
+                scenario_config["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
+            else:
+                scenario_config["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
+
+            # -> Generate tasks
+            scenario_config["tasks_types_ratios"] = tasks_types_ratios
+
+            scenario_config["goto_tasks"] = self.generate_tasks(
+                env_size=env_size,
+                goto_tasks_count=goto_tasks_count,
+                tasks_types_ratios=tasks_types_ratios,
+                initial_tasks_announcement=initial_tasks_announcement,
+                release_max_epoch=release_max_epoch
+            )
+
+            scenarios[scenario_config["scenario_id"]] = scenario_config
+
+        else:
+
+            # -> Loop for recompute on change
+            for i in range(2):
+                scenario_config_0 = deepcopy(scenario_config)
+
+                scenario_config_0["recompute_bids_on_state_change"] = bool(i)
+
+                # -> Loop for intercession
+                for j in self.intercession_targets.keys():
+                    scenario_config_1 = deepcopy(scenario_config_0)
+
+                    if j == "no":
+                        scenario_config_1["with_interceding"] = False
+                        scenario_config_1["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
+
+                    else:
+                        scenario_config_1["with_interceding"] = True
+                        scenario_config_1["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
+
+                    # -> Loop for tasks types ratios
+                    for k in range(len(self.tasks_count_config)):
+                        scenario_config_2 = deepcopy(scenario_config_1)
+
+                        scenario_config_2["tasks_types_ratios"] = self.tasks_count_config[k]
+
+                        # -> Generate tasks
+                        scenario_config_2["goto_tasks"] = self.generate_tasks(
+                            env_size=env_size,
+                            goto_tasks_count=goto_tasks_count,
+                            tasks_types_ratios=self.tasks_count_config[k],
+                            initial_tasks_announcement=initial_tasks_announcement,
+                            release_max_epoch=release_max_epoch
+                        )
+
+                        # -> Construct scenario_ref
+                        scenario_config_2["scenario_ref"] = scenario_config['scenario_id']
+                        scenario_config_2["scenario_ref"] += f"_{j}_intercession"
+                        scenario_config_2["scenario_ref"] += "_no" if not bool(i) else ""
+                        scenario_config_2["scenario_ref"] += "_recompute"
+                        scenario_config_2["scenario_ref"] += f"_{k}"
+
+                        scenarios[f'{scenario_config_2["scenario_ref"]}'] = scenario_config_2
+
+        if save_to_file:
+            for scenario_id, scenario in scenarios.items():
+                # -> Dump config to file as json
+                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json", "w") as f:
+                    f.write(dumps(scenario, default=convert_numpy_int64, indent=4))
+
+        return scenarios
+
+    def generate_tasks(self,
+                       env_size: int,
+                       goto_tasks_count: int,
+                       tasks_types_ratios: List[float],
+                       initial_tasks_announcement: int,
+                       release_max_epoch: int
+                       ):
         # ---------------- Generate GOTOs
         def generate_task(action_at_loc: str, target_agent_id: str, epoch: int) -> dict:
             # -> Generate task
@@ -249,7 +356,14 @@ class ScenariosGenerator:
         # -> Generate GOTO tasks
         goto_tasks = []
 
-        actions_at_loc = random.choices(self.skills, tasks_types_ratios, k=10)
+        # -> List all skills except goto
+        actions = ["NO_TASK"]
+
+        for skill in self.skills:
+            if skill != "GOTO":
+                actions.append(skill)
+
+        actions_at_loc = random.choices(actions, tasks_types_ratios, k=goto_tasks_count)
 
         for i in range(goto_tasks_count):
             goto_tasks.append(
@@ -264,6 +378,7 @@ class ScenariosGenerator:
         goto_tasks = sorted(goto_tasks, key=lambda x: x["euclidian_distance_from_start"])
 
         # > Update tasks according to schedule
+        initial_tasks_announcement = int(goto_tasks_count * initial_tasks_announcement)
         # > Set first len(initial_tasks_announcement) tasks to epoch 0
         for i in range(initial_tasks_announcement):
             goto_tasks[i]["epoch"] = 0
@@ -281,66 +396,10 @@ class ScenariosGenerator:
 
             task["epoch"] = step
 
-        # ---------------- Save config
-        scenario_config = {
-            "scenario_id": scenario_id,
-            "scenario_type": "gridworld",
-            "env_connectivity": env_connectivity,
-            "env_size": env_size,
-            "goto_tasks_count": goto_tasks_count,
-            "tasks_types_ratios": tasks_types_ratios,
-            "initial_tasks_announcement": initial_tasks_announcement,
-            "release_max_epoch": release_max_epoch,
-            "fleet_skillsets": fleet_skillsets,
-            "fleet_bids_mechanisms": fleet_bids_mechanisms,
-            "goto_tasks": goto_tasks,
-        }
+        for i in range(len(goto_tasks)):
+            goto_tasks[i]["id"] = f"{i}"
 
-        scenarios = {}
-
-        if gen_type == SOLO_GEN:
-            # -> Generate a single scenario with the given parameters
-            scenario_config["recompute_bids_on_state_change"] = recompute_bids_on_state_change
-            scenario_config["with_interceding"] = with_interceding
-
-            scenarios[scenario_config["scenario_id"]] = scenario_config
-        else:
-            # -> Generate a scenario for each combination of parameters
-            # > No intercession, no recompute
-            scenario_config_no_intercession_no_recompute = deepcopy(scenario_config)
-            scenario_config_no_intercession_no_recompute["recompute_bids_on_state_change"] = False
-            scenario_config_no_intercession_no_recompute["with_interceding"] = False
-
-            scenarios[f'{scenario_config["scenario_id"]}_no_intercession_no_recompute'] = scenario_config_no_intercession_no_recompute
-
-            # > No intercession, recompute
-            scenario_config_no_intercession_recompute = deepcopy(scenario_config)
-            scenario_config_no_intercession_recompute["recompute_bids_on_state_change"] = True
-            scenario_config_no_intercession_recompute["with_interceding"] = False
-
-            scenarios[f'{scenario_config["scenario_id"]}_no_intercession_recompute'] = scenario_config_no_intercession_recompute
-
-            # > Intercession, no recompute
-            scenario_config_intercession_no_recompute = deepcopy(scenario_config)
-            scenario_config_intercession_no_recompute["recompute_bids_on_state_change"] = False
-            scenario_config_intercession_no_recompute["with_interceding"] = True
-
-            scenarios[f'{scenario_config["scenario_id"]}_intercession_no_recompute'] = scenario_config_intercession_no_recompute
-
-            # > Intercession, recompute
-            scenario_config_intercession_recompute = deepcopy(scenario_config)
-            scenario_config_intercession_recompute["recompute_bids_on_state_change"] = True
-            scenario_config_intercession_recompute["with_interceding"] = True
-
-            scenarios[f'{scenario_config["scenario_id"]}_intercession_recompute'] = scenario_config_intercession_recompute
-
-        if save_to_file:
-            for scenario_id, scenario in scenarios.items():
-                # -> Dump config to file as json
-                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json", "w") as f:
-                    f.write(dumps(scenario, default=convert_numpy_int64, indent=4))
-
-        return scenarios
+        return goto_tasks
 
 
 def convert_numpy_int64(o):
@@ -350,8 +409,12 @@ def convert_numpy_int64(o):
 
 
 if __name__ == "__main__":
-    sg = ScenariosGenerator()
-    sg.gen_scenarios_config(
+    sg = ScenariosGenerator(5)
+    scenarios = sg.gen_scenarios_config(
         gen_type=PAIRS_GEN,
         save_to_file=True
     )
+
+    for scenario in scenarios.values():
+        print(scenario["goto_tasks_count"])
+        print(len(scenario["goto_tasks"]))

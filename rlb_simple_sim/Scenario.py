@@ -24,20 +24,25 @@ class Scenario:
                                                 "Turtle_3": "graph_weighted_manhattan_distance_bid",
                                                 "Turtle_4": "graph_weighted_manhattan_distance_bid"},
                  recompute_bids_on_state_change: bool = True,
-                 with_interceding: bool = False
+                 with_interceding: bool = False,
+                 load_only: bool = False,
+                 logger=None
                  ):
 
         self.scenario_id = scenario_id
 
         # -> If path corresponds to a scenario file, load it (check path)
-        if pathlib.Path(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json").exists():
-            with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json",
+        if pathlib.Path(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}").exists():
+            if logger is not None:
+                logger.info(f"Found scenario config: {scenario_id}")
+
+            with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}",
                       "r") as f:
                 scenario_config = loads(f.read())
 
                 self.load_gridworld_scenario_config(scenario_config)
 
-        else:
+        elif not load_only:
             scenario_config = ScenariosGenerator().gen_scenario_config(
                 scenario_id=scenario_id,
                 env_size=env_size,
@@ -55,19 +60,26 @@ class Scenario:
 
             self.load_gridworld_scenario_config(scenario_config)
 
+        else:
+            raise FileNotFoundError(f"Scenario config file not found: {scenario_id}")
+
     def load_gridworld_scenario_config(self, scenario_config):
+        self.seed = scenario_config["seed"]
         self.env_size = scenario_config["env_size"]
         self.env_connectivity = scenario_config["env_connectivity"]
         self.goto_tasks_count = scenario_config["goto_tasks_count"]
         self.tasks_types_ratios = scenario_config["tasks_types_ratios"]
         self.initial_tasks_announcement = scenario_config["initial_tasks_announcement"]
         self.release_max_epoch = scenario_config["release_max_epoch"]
+
+        self.agent_lst = scenario_config["agent_lst"]
         self.fleet_skillsets = scenario_config["fleet_skillsets"]
         self.fleet_bids_mechanisms = scenario_config["fleet_bids_mechanisms"]
         self.goto_tasks = scenario_config["goto_tasks"]
 
         self.recompute_bids_on_state_change = scenario_config["recompute_bids_on_state_change"]
         self.with_interceding = scenario_config["with_interceding"]
+        self.intercession_targets = scenario_config["intercession_targets"]
 
 
 if __name__ == "__main__":
