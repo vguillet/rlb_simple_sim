@@ -239,13 +239,13 @@ class ScenariosGenerator:
             "release_max_epoch": release_max_epoch,
 
             "agent_lst": self.agent_lst,
-            "fleet_skillsets": fleet_skillsets,
         }
 
         scenarios = {}
 
         if gen_type == SOLO_GEN:
             # -> Generate a single scenario with the given parameters
+            scenario_config["fleet_skillsets"] = fleet_skillsets
             scenario_config["recompute_bids_on_state_change"] = self.recompute_bids_on_state_change
             scenario_config["intercession_targets"] = self.intercession_targets[self.intercession_target]
             scenario_config["with_interceding"] = self.with_interceding
@@ -288,11 +288,19 @@ class ScenariosGenerator:
                         scenario_config_1["with_interceding"] = True
                         scenario_config_1["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
 
+                    scenario_config_1["intercession_targets"] = self.intercession_targets[j]
+
                     # -> Loop for tasks types ratios
                     for k in range(len(self.tasks_count_config)):
                         scenario_config_2 = deepcopy(scenario_config_1)
 
                         scenario_config_2["tasks_types_ratios"] = self.tasks_count_config[k]
+
+                        # -> Add fleet skillset
+                        if self.tasks_count_config[k] == [10, 39, 1]:
+                            scenario_config_2["fleet_skillsets"] = self.fleets_skillsets[1]
+                        else:
+                            scenario_config_2["fleet_skillsets"] = self.fleets_skillsets[0]
 
                         # -> Generate tasks
                         scenario_config_2["goto_tasks"] = self.generate_tasks(
@@ -409,12 +417,16 @@ def convert_numpy_int64(o):
 
 
 if __name__ == "__main__":
-    sg = ScenariosGenerator(5)
+    datasets_count = 10
+
+    sg = ScenariosGenerator(datasets_count)
     scenarios = sg.gen_scenarios_config(
         gen_type=PAIRS_GEN,
         save_to_file=True
     )
 
-    for scenario in scenarios.values():
-        print(scenario["goto_tasks_count"])
-        print(len(scenario["goto_tasks"]))
+    print(f"Generated {len(scenarios)} scenarios")
+    # Define time delta as 1:30
+    single_run_time = timedelta(seconds=1*60+30)
+
+    print(f"Estimated time for {datasets_count} datasets: {single_run_time * datasets_count * 6}")

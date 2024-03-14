@@ -30,6 +30,7 @@ import warnings
 from copy import deepcopy
 from math import ceil
 from functools import partial
+import time
 
 # Libs
 import numpy as np
@@ -388,15 +389,17 @@ class RLB_simple_sim(Node):
             self.results.dump_results()
 
             # -> Publish terminate simulator nodes signal
-            self.simulator_signals_pub.publish(msg=TeamCommStamped(
-                source="",
-                target="",
-                meta_action="order 66",
-                memo=""
+            for _ in range(10):
+                self.simulator_signals_pub.publish(msg=TeamCommStamped(
+                    source="",
+                    target="",
+                    meta_action="order 66",
+                    memo=""
+                    )
                 )
-            )
 
-            self.get_logger().info("Received order 66: Terminating simulation")
+                self.get_logger().info("Received order 66: Terminating simulation")
+                time.sleep(0.1)
 
             # -> Terminate node
             self.destroy_node()

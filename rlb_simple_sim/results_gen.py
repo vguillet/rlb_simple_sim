@@ -2,44 +2,55 @@
 from datetime import datetime
 import os
 import json
-import pickle
 from maaf_allocation_node.node_config import *
+from copy import deepcopy
 
 
 class Results:
     def __init__(self, fleet, scenario):
         self.results = {
+            # -> Scenario
+            "seed": scenario.seed,
+            "env_size": scenario.env_size,
+            "env_connectivity": scenario.env_connectivity,
+            "goto_tasks_count": scenario.goto_tasks_count,
+            "tasks_types_ratios": scenario.tasks_types_ratios,
+            "initial_tasks_announcement": scenario.initial_tasks_announcement,
+            "release_max_epoch": scenario.release_max_epoch,
+
+            "agent_lst": scenario.agent_lst,
+            "fleet_skillsets": scenario.fleet_skillsets,
+            "fleet_bids_mechanisms": scenario.fleet_bids_mechanisms,
+            "goto_tasks": scenario.goto_tasks,
+
+            "recompute_bids_on_state_change": scenario.recompute_bids_on_state_change,
+            "with_interceding": scenario.with_interceding,
+            "intercession_targets": scenario.intercession_targets,
+
+            # -> Non-serializable
+            "fleet": fleet,
             "sim_start_time": None,                 # datetime
             "sim_end_time": None,                   # datetime
             "sim_duration": None,                   # timedelta
-            "last_epoch": 0,                        # int
             "average_time_per_epoch": None,         # timedelta
+
+            "last_epoch": 0,                        # int
             "pose_history": {},                     # {agent_id: [(x, y), (x, y), ...]}
             "move_history": {},                     # {agent_id: [(x, y), (x, y), ...]}
             "task_history": {},                     # {task_id: [(x, y), (x, y), ...]}
             "allocation": {},                       # {task_id: {agent_id: ..., epoch: ...}}
             "total_fleet_msgs_count": 0,            # int
             "total_goal_msgs_count": 0,             # int
-            "fleet": fleet,
 
             # -> Config
             "sim_id": scenario.scenario_id,
-            "recompute_bids_on_state_change": scenario.recompute_bids_on_state_change,
-            "with_interceding": scenario.with_interceding,
-            "env_size": scenario.env_size,
-            "env_connectivity": scenario.env_connectivity,
             "goto_task_count": scenario.goto_tasks_count,
             "no_task_task_count": 0,
             "action_1_task_count": 0,
             "action_2_task_count": 0,
             "total_task_count": 0,
-            "initial_tasks_announcement": scenario.initial_tasks_announcement,
-            "release_spread": release_spread,
-            "release_ration": release_ration,
-            "release_max_epoch": scenario.release_max_epoch,
-            "agent_lst": scenario.agent_lst,
-            "fleet_skillsets": scenario.fleet_skillsets,
-            "fleet_bids_mechanisms": scenario.fleet_bids_mechanisms
+            "release_spread": deepcopy(release_spread),
+            "release_ration": deepcopy(release_ration),
         }
 
         # -> Gen scenario stats
@@ -78,6 +89,18 @@ class Results:
         # > Generate recap
         run_recap = self.generate_run_recap()
 
+        # > Remove all non-serializable objects
+        unserialsed_keys = [
+            "fleet",
+            "sim_start_time",
+            "sim_end_time",
+            "sim_duration",
+            "average_time_per_epoch"
+        ]
+
+        for key in unserialsed_keys:
+            del self.results[key]
+
         # > Dump run recap to file
         with open(run_recap_file_path, 'w') as file:
             file.write(run_recap)
@@ -85,12 +108,12 @@ class Results:
 
         # -> Run results
         # > Generate file path
-        run_results_file_path = results_dir + "/run_results.pkl"
+        run_results_file_path = results_dir + "/run_results.json"
 
-        # > Dump results to pickle file
-        with open(run_results_file_path, 'wb') as file:    # Open the file in binary write mode
+        # > Dump results to file
+        with open(run_results_file_path, 'w') as file:    # Open the file in binary write mode
             # Dump the dictionary to the file
-            pickle.dump(self.results, file)
+            json.dump(self.results, file, indent=4, sort_keys=True)
             print(f"- Run results dumped to {run_results_file_path}")
 
     def generate_run_recap(self) -> str:
