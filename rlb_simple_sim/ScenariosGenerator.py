@@ -48,7 +48,7 @@ PAIRS_GEN = 1
 
 class ScenariosGenerator:
     def __init__(self, scenarios_count=1):
-        self.seed = 0
+        self.seed = 12
         self.rng = np.random.RandomState(seed=self.seed)
 
         self.scenarios_count = scenarios_count
@@ -323,7 +323,7 @@ class ScenariosGenerator:
         if save_to_file:
             for scenario_id, scenario in scenarios.items():
                 # -> Dump config to file as json
-                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json", "w") as f:
+                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs_2/{scenario_id}.json", "w") as f:
                     f.write(dumps(scenario, default=convert_numpy_int64, indent=4))
 
         return scenarios
@@ -417,7 +417,7 @@ def convert_numpy_int64(o):
 
 
 if __name__ == "__main__":
-    datasets_count = 10
+    datasets_count = 100
 
     sg = ScenariosGenerator(datasets_count)
     scenarios = sg.gen_scenarios_config(
