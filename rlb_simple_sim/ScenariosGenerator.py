@@ -179,11 +179,9 @@ class ScenariosGenerator:
                 env_connectivity=env_connectivity_configs[i],
                 env_size=env_size_configs[i],
                 goto_tasks_count=goto_tasks_count_configs[i],
-                tasks_types_ratios=[
-                    tasks_types_ratios_configs[0][i],
-                    tasks_types_ratios_configs[1][i],
-                    tasks_types_ratios_configs[2][i]
-                ],
+                no_tasks_count=tasks_types_ratios_configs[0][i],
+                action_1_tasks_count=tasks_types_ratios_configs[1][i],
+                action_2_tasks_count=tasks_types_ratios_configs[2][i],
                 initial_tasks_announcement=initial_tasks_announcement_configs[i],
                 release_max_epoch=release_max_epoch_configs[i],
                 fleet_skillsets=self.fleets_skillsets[fleets_skillsets_configs[i]],
@@ -219,7 +217,9 @@ class ScenariosGenerator:
                             env_size: int,
                             env_connectivity: float,
                             goto_tasks_count: int,
-                            tasks_types_ratios: List[float],
+                            no_tasks_count: int,
+                            action_1_tasks_count: int,
+                            action_2_tasks_count: int,
                             initial_tasks_announcement: int,
                             release_max_epoch: int,
                             fleet_skillsets: dict,
@@ -256,12 +256,14 @@ class ScenariosGenerator:
                 scenario_config["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
 
             # -> Generate tasks
-            scenario_config["tasks_types_ratios"] = tasks_types_ratios
+            scenario_config["tasks_types_ratios"] = [no_tasks_count, action_1_tasks_count, action_2_tasks_count]
 
             scenario_config["goto_tasks"] = self.generate_tasks(
                 env_size=env_size,
                 goto_tasks_count=goto_tasks_count,
-                tasks_types_ratios=tasks_types_ratios,
+                no_tasks_count=no_tasks_count,
+                action_1_tasks_count=action_1_tasks_count,
+                action_2_tasks_count=action_2_tasks_count,
                 initial_tasks_announcement=initial_tasks_announcement,
                 release_max_epoch=release_max_epoch
             )
@@ -270,46 +272,65 @@ class ScenariosGenerator:
 
         else:
 
-            # -> Loop for recompute on change
-            for i in range(2):
+            # -> Loop for tasks types ratios
+            for k in range(len(self.tasks_count_config)):
                 scenario_config_0 = deepcopy(scenario_config)
 
-                scenario_config_0["recompute_bids_on_state_change"] = bool(i)
+                scenario_config_0["tasks_types_ratios"] = self.tasks_count_config[k]
 
-                # -> Loop for intercession
-                for j in self.intercession_targets.keys():
+                # -> Add fleet skillset
+                if self.tasks_count_config[k] == [10, 39, 1]:
+                    scenario_config_0["fleet_skillsets"] = self.fleets_skillsets[1]
+                else:
+                    scenario_config_0["fleet_skillsets"] = self.fleets_skillsets[0]
+
+                # -> Generate tasks
+                scenario_config_0["goto_tasks"] = self.generate_tasks(
+                    env_size=env_size,
+                    goto_tasks_count=goto_tasks_count,
+                    no_tasks_count=self.tasks_count_config[k][0],
+                    action_1_tasks_count=self.tasks_count_config[k][1],
+                    action_2_tasks_count=self.tasks_count_config[k][2],
+                    initial_tasks_announcement=initial_tasks_announcement,
+                    release_max_epoch=release_max_epoch
+                )
+
+                no_tasks_count = 0
+                action_1_tasks_count = 0
+                action_2_tasks_count = 0
+
+                for task in scenario_config_0["goto_tasks"]:
+                    if task["instructions"]["ACTION_AT_LOC"] == "NO_TASK":
+                        no_tasks_count += 1
+                    elif task["instructions"]["ACTION_AT_LOC"] == "ACTION_1":
+                        action_1_tasks_count += 1
+                    elif task["instructions"]["ACTION_AT_LOC"] == "ACTION_2":
+                        action_2_tasks_count += 1
+
+                scenario_config_0["no_tasks_count"] = no_tasks_count
+                scenario_config_0["action_1_tasks_count"] = action_1_tasks_count
+                scenario_config_0["action_2_tasks_count"] = action_2_tasks_count
+                scenario_config_0["tasks_types_ratios"] = self.tasks_count_config[k]
+
+                # -> Loop for recompute on change
+                for i in range(2):
                     scenario_config_1 = deepcopy(scenario_config_0)
 
-                    if j == "no":
-                        scenario_config_1["with_interceding"] = False
-                        scenario_config_1["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
+                    scenario_config_1["recompute_bids_on_state_change"] = bool(i)
 
-                    else:
-                        scenario_config_1["with_interceding"] = True
-                        scenario_config_1["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
-
-                    scenario_config_1["intercession_targets"] = self.intercession_targets[j]
-
-                    # -> Loop for tasks types ratios
-                    for k in range(len(self.tasks_count_config)):
+                    # -> Loop for intercession
+                    for j in self.intercession_targets.keys():
                         scenario_config_2 = deepcopy(scenario_config_1)
 
-                        scenario_config_2["tasks_types_ratios"] = self.tasks_count_config[k]
+                        if j == "no":
+                            scenario_config_2["with_interceding"] = False
+                            scenario_config_2["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
 
-                        # -> Add fleet skillset
-                        if self.tasks_count_config[k] == [10, 39, 1]:
-                            scenario_config_2["fleet_skillsets"] = self.fleets_skillsets[1]
                         else:
-                            scenario_config_2["fleet_skillsets"] = self.fleets_skillsets[0]
+                            scenario_config_2["with_interceding"] = True
+                            scenario_config_2["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
 
-                        # -> Generate tasks
-                        scenario_config_2["goto_tasks"] = self.generate_tasks(
-                            env_size=env_size,
-                            goto_tasks_count=goto_tasks_count,
-                            tasks_types_ratios=self.tasks_count_config[k],
-                            initial_tasks_announcement=initial_tasks_announcement,
-                            release_max_epoch=release_max_epoch
-                        )
+                        scenario_config_2["intercession_targets"] = self.intercession_targets[j]
 
                         # -> Construct scenario_ref
                         scenario_config_2["scenario_ref"] = scenario_config['scenario_id']
@@ -323,7 +344,7 @@ class ScenariosGenerator:
         if save_to_file:
             for scenario_id, scenario in scenarios.items():
                 # -> Dump config to file as json
-                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs_2/{scenario_id}.json", "w") as f:
+                with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}.json", "w") as f:
                     f.write(dumps(scenario, default=convert_numpy_int64, indent=4))
 
         return scenarios
@@ -331,7 +352,9 @@ class ScenariosGenerator:
     def generate_tasks(self,
                        env_size: int,
                        goto_tasks_count: int,
-                       tasks_types_ratios: List[float],
+                       no_tasks_count: int,
+                       action_1_tasks_count: int,
+                       action_2_tasks_count: int,
                        initial_tasks_announcement: int,
                        release_max_epoch: int
                        ):
@@ -365,13 +388,10 @@ class ScenariosGenerator:
         goto_tasks = []
 
         # -> List all skills except goto
-        actions = ["NO_TASK"]
+        actions_at_loc = ["NO_TASK"] * no_tasks_count + ["ACTION_1"] * action_1_tasks_count + ["ACTION_2"] * action_2_tasks_count
 
-        for skill in self.skills:
-            if skill != "GOTO":
-                actions.append(skill)
-
-        actions_at_loc = random.choices(actions, tasks_types_ratios, k=goto_tasks_count)
+        # -> Shuffle actions
+        self.rng.shuffle(actions_at_loc)
 
         for i in range(goto_tasks_count):
             goto_tasks.append(
