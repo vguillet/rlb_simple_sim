@@ -2,7 +2,7 @@
 from datetime import datetime
 import os
 import json
-from maaf_allocation_node.node_config import *
+from orchestra_config.sim_config import *
 from copy import deepcopy
 
 

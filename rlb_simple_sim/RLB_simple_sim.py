@@ -50,9 +50,9 @@ import numpy as np
 from orchestra_config.orchestra_config import *     # KEEP THIS LINE, DO NOT REMOVE
 from maaf_msgs.msg import TeamCommStamped
 from .Scenario import Scenario
-from maaf_allocation_node.fleet_dataclasses import Agent, Fleet
-from maaf_allocation_node.tools import euler_from_quaternion
-from maaf_allocation_node.state_dataclasses import Agent_state
+from maaf_tools.datastructures.fleet_dataclasses import Agent, Fleet
+from maaf_tools.tools import euler_from_quaternion
+from maaf_tools.datastructures.state_dataclasses import Agent_state
 from .results_gen import Results
 
 ######################################################################################################
@@ -236,7 +236,7 @@ class RLB_simple_sim(Node):
                 "w": w,
                 "timestamp": pose_msg.header.stamp.sec + pose_msg.header.stamp.nanosec * 1e-9
             },
-            allow_incomplete=True
+            partial=True
         )
 
         if agent_id not in self.fleet.ids:

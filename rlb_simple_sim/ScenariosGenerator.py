@@ -45,6 +45,8 @@ import numpy as np
 SOLO_GEN = 0
 PAIRS_GEN = 1
 
+##################################################################################################################
+
 
 class ScenariosGenerator:
     def __init__(self, scenarios_count=1):
@@ -85,8 +87,8 @@ class ScenariosGenerator:
 
         self.intercession_targets = {
             "no": [],
-            "partial": ["GOTO", "ACTION_1"],
-            "full": ["GOTO", "ACTION_1", "ACTION_2"]
+            "partial": ["ACTION_1", "NO_TASK"],
+            "full": ["ACTION_1", "ACTION_2", "NO_TASK"]
         }
 
         self.fleets_skillsets = [
