@@ -50,9 +50,15 @@ import numpy as np
 from orchestra_config.orchestra_config import *     # KEEP THIS LINE, DO NOT REMOVE
 from maaf_msgs.msg import TeamCommStamped
 from .Scenario import Scenario
-from maaf_tools.datastructures.fleet_dataclasses import Agent, Fleet
+
+from maaf_tools.datastructures.task.Task import Task
+from maaf_tools.datastructures.task.TaskLog import TaskLog
+
+from maaf_tools.datastructures.agent.Agent import Agent
+from maaf_tools.datastructures.agent.Fleet import Fleet
+from maaf_tools.datastructures.agent.AgentState import AgentState
+
 from maaf_tools.tools import euler_from_quaternion
-from maaf_tools.datastructures.state_dataclasses import Agent_state
 from .results_gen import Results
 
 ######################################################################################################
@@ -225,7 +231,7 @@ class RLB_simple_sim(Node):
         u, v, w = euler_from_quaternion(quat=pose_msg.pose.orientation)
 
         # -> Update state
-        new_state = Agent_state.from_dict(
+        new_state = AgentState.from_dict(
             agent_dict={
                 "agent_id": agent_id,
                 "x": pose_msg.pose.position.x,
