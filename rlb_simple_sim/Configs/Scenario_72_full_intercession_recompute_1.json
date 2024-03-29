@@ -800,9 +800,9 @@
         "Turtle_4": "graph_weighted_manhattan_distance_bid"
     },
     "intercession_targets": [
-        "GOTO",
         "ACTION_1",
-        "ACTION_2"
+        "ACTION_2",
+        "NO_TASK"
     ],
     "scenario_ref": "Scenario_72_full_intercession_recompute_1"
 }

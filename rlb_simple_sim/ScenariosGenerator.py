@@ -63,7 +63,8 @@ class ScenariosGenerator:
         # ----- Environment
         self.env_connectivity_range = [0.90, 0.90]
         self.env_size_range = [19, 19]
-        
+        # self.env_size_range = [9, 9]
+
         # ----- Tasks
         self.goto_tasks_count_range = [50, 50]
 

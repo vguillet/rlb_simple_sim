@@ -194,6 +194,9 @@ class RLB_simple_sim(Node):
 
         msg_memo = loads(msg.memo)
 
+        # -> Construct source agent
+        source_agent = Agent.from_dict(msg_memo["agent"])
+
         # -> If the agent is not in the fleet, add it
         if msg.source not in self.fleet.ids:
             self.robot_pose_sub[msg.source] = self.create_subscription(
@@ -203,21 +206,19 @@ class RLB_simple_sim(Node):
                 qos_profile=qos_pose
             )
 
-            self.fleet.add_agent(agent=msg_memo["agent"])
+            self.fleet.add_agent(agent=source_agent)
+            self.fleet[msg.source].local["tasks"] = {}
 
             # -> Add entry in histories
             self.results["pose_history"][msg.source] = []
             self.results["move_history"][msg.source] = []
 
-        # -> Update the agent state
-        if msg.meta_action == "assign":
-            self.fleet[msg.source].local["goal"] = msg_memo["task"]
+        if msg.meta_action == "update":
+            self.fleet[msg.source].plan = source_agent.plan
+            self.fleet[msg.source].local["tasks"] = {}
 
-        elif msg.meta_action == "unassign":
-            self.fleet[msg.source].local["goal"] = None
-
-        else:
-            self.fleet[msg.source].local["goal"] = None
+            for task_id, task_dict in msg_memo["tasks"].items():
+                self.fleet[msg.source].local["tasks"][task_id] = Task.from_dict(task_dict)
 
         self.results["total_goal_msgs_count"] += 1
 
@@ -378,8 +379,8 @@ class RLB_simple_sim(Node):
         self.get_logger().info(f"-----------------")
         self.get_logger().info(f"Current goals:")
         for agent in self.fleet:
-            if agent.local["goal"] is not None:
-                self.get_logger().info(f"    - {agent.id}: {agent.local['goal']['id']}")
+            if agent.plan is not None:
+                self.get_logger().info(f"    - {agent.id}: {agent.plan.task_bundle}")
 
         if len(self.results["allocation"]) == self.results["total_task_count"]:
             self.results["last_epoch"] = self.sim_epoch
