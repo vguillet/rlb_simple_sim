@@ -110,7 +110,7 @@ class RLB_simple_sim(Node):
         # self.task_sub = self.create_subscription(
         #     msg_type=TeamCommStamped,
         #     topic=topic_tasks,
-        #     callback=self.task_msg_subscriber_callback,
+        #     callback=self._task_msg_subscriber_callback,
         #     qos_profile=qos_tasks
         # )
 
@@ -162,25 +162,24 @@ class RLB_simple_sim(Node):
         """
         Generate a TeamCommStamped msg from a task dictionary.
         """
+        # -> Construct task
+        new_task = Task(
+            id=task_id,
+            type=task_type,
+            creator=agent_id,
+            instructions=instructions,
+            affiliations=affiliations,
+            priority=priority,
+            creation_timestamp=0
+        )
+
         msg = TeamCommStamped()
 
         msg.trace = []
         msg.source = "Simple_sim"
         msg.target = agent_id
         msg.meta_action = meta_action
-        msg.memo = dumps({
-            "id": task_id,
-            "type": task_type,
-            "creator": agent_id,
-            "affiliations": affiliations,
-
-            "priority": priority,
-            "instructions": instructions,
-            "creation_timestamp": 0,
-            "termination_timestamp": None,
-            "termination_source_id": None,
-            "status": "pending"
-        })
+        msg.memo = dumps(new_task.asdict())
 
         return msg
 
@@ -232,18 +231,15 @@ class RLB_simple_sim(Node):
         u, v, w = euler_from_quaternion(quat=pose_msg.pose.orientation)
 
         # -> Update state
-        new_state = AgentState.from_dict(
-            agent_dict={
-                "agent_id": agent_id,
-                "x": pose_msg.pose.position.x,
-                "y": pose_msg.pose.position.y,
-                "z": pose_msg.pose.position.z,
-                "u": u,
-                "v": v,
-                "w": w,
-                "timestamp": pose_msg.header.stamp.sec + pose_msg.header.stamp.nanosec * 1e-9
-            },
-            partial=True
+        new_state = AgentState(
+                agent_id=agent_id,
+                x=pose_msg.pose.position.x,
+                y=pose_msg.pose.position.y,
+                z=pose_msg.pose.position.z,
+                u=u,
+                v=v,
+                w=w,
+                _timestamp=pose_msg.header.stamp.sec + pose_msg.header.stamp.nanosec * 1e-9
         )
 
         if agent_id not in self.fleet.ids:
@@ -277,6 +273,9 @@ class RLB_simple_sim(Node):
                 "epoch": self.sim_epoch,
                 "goal": task_dict
             }
+
+            # -> Publish task completion
+            self.task_pub.publish(msg=task_msg)
 
             # -> If no action at location, do nothing
             if task_dict["instructions"]["ACTION_AT_LOC"] != "NO_TASK":
@@ -313,9 +312,6 @@ class RLB_simple_sim(Node):
                     "release_epoch": self.sim_epoch,
                     "termination_epoch": None
                 }
-
-            # -> Publish task completion
-            self.task_pub.publish(msg=task_msg)
 
     def sim_epoch_callback(self, msg):
         if self.results["sim_start_time"] is None:
@@ -378,9 +374,38 @@ class RLB_simple_sim(Node):
         self.get_logger().info(f" Runtime: {datetime.now() - self.results['sim_start_time']}")
         self.get_logger().info(f"-----------------")
         self.get_logger().info(f"Current goals:")
+
         for agent in self.fleet:
             if agent.plan is not None:
-                self.get_logger().info(f"    - {agent.id}: {agent.plan.task_bundle}")
+                no_action_tasks = []
+                action_1_tasks = []
+                action_2_tasks = []
+
+                for task_id in agent.plan.task_sequence:
+                    if agent.local["tasks"][task_id].instructions["ACTION_AT_LOC"] == "NO_TASK":
+                        no_action_tasks.append(task_id)
+                    elif agent.local["tasks"][task_id].instructions["ACTION_AT_LOC"] == "ACTION_1":
+                        action_1_tasks.append(task_id)
+                    elif agent.local["tasks"][task_id].instructions["ACTION_AT_LOC"] == "ACTION_2":
+                        action_2_tasks.append(task_id)
+                    else:
+                        self.get_logger().warning(f"!!! Unknown action type for task {task_id}")
+
+                self.get_logger().info(f"    - {agent.id}: {agent.plan.task_sequence}\n > No action: {no_action_tasks}\n > Action 1: {action_1_tasks}\n > Action 2: {action_2_tasks}")
+
+        # -> FInd all doubles
+        doubles = {}
+        for agent in self.fleet:
+            if agent.plan is not None:
+                for task in agent.plan.task_sequence:
+                    if task in doubles:
+                        doubles[task].append(agent.id)
+                    else:
+                        doubles[task] = [agent.id]
+
+        for task, agents in doubles.items():
+            if len(agents) > 1:
+                self.get_logger().warning(f"!!! Overlapping allocation of task {task} between {agents}")
 
         if len(self.results["allocation"]) == self.results["total_task_count"]:
             self.results["last_epoch"] = self.sim_epoch

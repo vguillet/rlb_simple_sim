@@ -61,7 +61,7 @@ class ScenariosGenerator:
         self.intercession_target = "full"
 
         # ----- Environment
-        self.env_connectivity_range = [0.90, 0.90]
+        self.env_connectivity_range = [.85, .85]
         self.env_size_range = [19, 19]
         # self.env_size_range = [9, 9]
 
@@ -80,7 +80,7 @@ class ScenariosGenerator:
         self.action2_tasks_fraction_range = [1, 2]
 
         self.initial_tasks_announcement_fraction_range = [0.1, 0.1]
-        self.release_max_epoch_range = [60, 60]
+        self.release_max_epoch_range = [100, 100]
 
         # ----- Agents
         self.agent_lst = ["Turtle_1", "Turtle_2", "Turtle_3", "Turtle_4"]
@@ -118,12 +118,12 @@ class ScenariosGenerator:
             #     "Turtle_4": ["GOTO", "ACTION_2"],
             # }
         ]
-        
+
         self.bids_functions = [
             "anticipated_action_task_interceding_agent",
             "graph_weighted_manhattan_distance_bid"
         ]
-        
+
         self.fleet_bids_mechanisms = {
             "interceding": {
                 "Turtle_1": "anticipated_action_task_interceding_agent",
