@@ -9,6 +9,7 @@ from copy import deepcopy
 class Results:
     def __init__(self, fleet, scenario):
         self.results = {
+            "algo": "ICBAA",
             # -> Scenario
             "seed": scenario.seed,
             "env_size": scenario.env_size,
