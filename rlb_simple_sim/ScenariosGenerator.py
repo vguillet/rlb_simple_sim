@@ -84,13 +84,24 @@ class ScenariosGenerator:
 
         # ----- Agents
         self.agent_lst = ["Turtle_1", "Turtle_2", "Turtle_3", "Turtle_4"]
-        self.skills = ["GOTO", "ACTION_1", "ACTION_2"]
+        #self.skills = ["GOTO", "ACTION_1", "ACTION_2"]
 
         self.intercession_targets = {
             "no": [],
             "partial": ["ACTION_1", "NO_TASK"],
             "full": ["ACTION_1", "ACTION_2", "NO_TASK"]
         }
+
+        self.intercession_rates = np.linspace(0, 1, 5, dtype=float)
+
+        self.visibility_ranges = [
+            {
+            "Turtle_1": 1,
+            "Turtle_2": 1,
+            "Turtle_3": 1,
+            "Turtle_4": 1
+            }
+        ]
 
         self.fleets_skillsets = [
             {
@@ -119,23 +130,21 @@ class ScenariosGenerator:
             # }
         ]
 
-        self.bids_functions = [
-            "anticipated_action_task_interceding_agent",
-            "graph_weighted_manhattan_distance_bid"
-        ]
+        INTERCEDING = "anticipated_action_task_interceding_agent"
+        NO_INTERCEDING = "graph_weighted_manhattan_distance_bid"
 
         self.fleet_bids_mechanisms = {
             "interceding": {
-                "Turtle_1": "anticipated_action_task_interceding_agent",
-                "Turtle_2": "graph_weighted_manhattan_distance_bid",
-                "Turtle_3": "graph_weighted_manhattan_distance_bid",
-                "Turtle_4": "graph_weighted_manhattan_distance_bid",
+                "Turtle_1": INTERCEDING,
+                "Turtle_2": NO_INTERCEDING,
+                "Turtle_3": NO_INTERCEDING,
+                "Turtle_4": NO_INTERCEDING,
             },
             "no_interceding": {
-                "Turtle_1": "graph_weighted_manhattan_distance_bid",
-                "Turtle_2": "graph_weighted_manhattan_distance_bid",
-                "Turtle_3": "graph_weighted_manhattan_distance_bid",
-                "Turtle_4": "graph_weighted_manhattan_distance_bid",
+                "Turtle_1": NO_INTERCEDING,
+                "Turtle_2": NO_INTERCEDING,
+                "Turtle_3": NO_INTERCEDING,
+                "Turtle_4": NO_INTERCEDING,
             }
         }
 
@@ -170,6 +179,9 @@ class ScenariosGenerator:
         self.rng.shuffle(release_max_epoch_configs)
         
         # ----- Agents
+        fleets_visibility_ranges_configs = np.linspace(0, len(self.visibility_ranges)-1, self.scenarios_count, dtype=int)
+        self.rng.shuffle(fleets_visibility_ranges_configs)
+
         fleets_skillsets_configs = np.linspace(0, len(self.fleets_skillsets)-1, self.scenarios_count, dtype=int)
         self.rng.shuffle(fleets_skillsets_configs)
 
@@ -187,6 +199,7 @@ class ScenariosGenerator:
                 action_2_tasks_count=tasks_types_ratios_configs[2][i],
                 initial_tasks_announcement=initial_tasks_announcement_configs[i],
                 release_max_epoch=release_max_epoch_configs[i],
+                fleets_visibility_ranges = self.visibility_ranges[fleets_visibility_ranges_configs[i]],
                 fleet_skillsets=self.fleets_skillsets[fleets_skillsets_configs[i]],
                 gen_type=gen_type,
                 save_to_file=save_to_file
@@ -225,12 +238,14 @@ class ScenariosGenerator:
                             action_2_tasks_count: int,
                             initial_tasks_announcement: int,
                             release_max_epoch: int,
+                            fleets_visibility_ranges: dict,
                             fleet_skillsets: dict,
                             gen_type: int = SOLO_GEN,
                             save_to_file: bool = False,
                             ) -> dict:
 
         # ---------------- Save config
+        # Parameters bellow are shared across configs
         scenario_config = {
             "seed": self.seed,
             "scenario_id": scenario_id,
@@ -242,6 +257,7 @@ class ScenariosGenerator:
             "release_max_epoch": release_max_epoch,
 
             "agent_lst": self.agent_lst,
+            "visibility_ranges": fleets_visibility_ranges, # Fixed for now
         }
 
         scenarios = {}
@@ -251,6 +267,7 @@ class ScenariosGenerator:
             scenario_config["fleet_skillsets"] = fleet_skillsets
             scenario_config["recompute_bids_on_state_change"] = self.recompute_bids_on_state_change
             scenario_config["intercession_targets"] = self.intercession_targets[self.intercession_target]
+            scenario_config["interventionism"] = 0.0  # TODO: Correct ot make dynamic
             scenario_config["with_interceding"] = self.with_interceding
 
             if self.with_interceding:
@@ -335,14 +352,24 @@ class ScenariosGenerator:
 
                         scenario_config_2["intercession_targets"] = self.intercession_targets[j]
 
-                        # -> Construct scenario_ref
-                        scenario_config_2["scenario_ref"] = scenario_config['scenario_id']
-                        scenario_config_2["scenario_ref"] += f"_{j}_intercession"
-                        scenario_config_2["scenario_ref"] += "_no" if not bool(i) else ""
-                        scenario_config_2["scenario_ref"] += "_recompute"
-                        scenario_config_2["scenario_ref"] += f"_{k}"
+                        # scenarios[f'{scenario_config_2["scenario_ref"]}'] = scenario_config_2
 
-                        scenarios[f'{scenario_config_2["scenario_ref"]}'] = scenario_config_2
+                        # TODO: Add loop for interventionism (intercession rate)
+                        for interventionism in self.intercession_rates:
+                            scenario_config_3 = deepcopy(scenario_config_2)
+
+                            scenario_config_3["interventionism"] = interventionism
+
+                            # -> Construct scenario_ref
+                            # -> Construct scenario_ref
+                            scenario_config_3["scenario_ref"] = scenario_config['scenario_id']
+                            scenario_config_3["scenario_ref"] += f"_{j}_intercession"
+                            scenario_config_3["scenario_ref"] += "_no" if not bool(i) else ""
+                            scenario_config_3["scenario_ref"] += "_recompute"
+                            scenario_config_3["scenario_ref"] += f"_{k}"
+                            scenario_config_3["scenario_ref"] += f"_interventionism_{int(100*interventionism)}"
+
+                            scenarios[f'{scenario_config_3["scenario_ref"]}'] = scenario_config_3
 
         if save_to_file:
             for scenario_id, scenario in scenarios.items():
@@ -440,7 +467,7 @@ def convert_numpy_int64(o):
 
 
 if __name__ == "__main__":
-    datasets_count = 100
+    datasets_count = 1
 
     sg = ScenariosGenerator(datasets_count)
     scenarios = sg.gen_scenarios_config(
@@ -452,4 +479,4 @@ if __name__ == "__main__":
     # Define time delta as 1:30
     single_run_time = timedelta(seconds=1*60+30)
 
-    print(f"Estimated time for {datasets_count} datasets: {single_run_time * datasets_count * 6}")
+    print(f"Estimated time for {datasets_count} datasets: {single_run_time * datasets_count * 6*5}")

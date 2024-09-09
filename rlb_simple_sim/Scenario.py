@@ -73,6 +73,8 @@ class Scenario:
         self.release_max_epoch = scenario_config["release_max_epoch"]
 
         self.agent_lst = scenario_config["agent_lst"]
+        self.visibility_ranges = scenario_config["visibility_ranges"]
+
         self.fleet_skillsets = scenario_config["fleet_skillsets"]
         self.fleet_bids_mechanisms = scenario_config["fleet_bids_mechanisms"]
         self.goto_tasks = scenario_config["goto_tasks"]
@@ -80,6 +82,17 @@ class Scenario:
         self.recompute_bids_on_state_change = scenario_config["recompute_bids_on_state_change"]
         self.with_interceding = scenario_config["with_interceding"]
         self.intercession_targets = scenario_config["intercession_targets"]
+        self.interventionism = scenario_config["interventionism"]
+
+        # -> Generate agent dictionary
+        self.agent_dict = {}
+
+        for agent in self.agent_lst:
+            self.agent_dict[agent] = {
+                "skillset": self.fleet_skillsets[agent],
+                "visibility range": self.visibility_ranges[agent],
+                "bid mechanism": self.fleet_bids_mechanisms[agent]
+            }
 
 
 if __name__ == "__main__":

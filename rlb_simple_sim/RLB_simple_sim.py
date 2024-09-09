@@ -89,6 +89,9 @@ class RLB_simple_sim(Node):
 
         self.goto_tasks = self.scenario.goto_tasks
 
+        # --> Trackers
+        self.tasks_released = []
+
         # ---------------------------------- Subscribers
         # ---------- epoch
         self.sim_epoch_sub = self.create_subscription(
@@ -252,6 +255,20 @@ class RLB_simple_sim(Node):
             # -> Log agent move
             self.results['move_history'][agent_id].append((self.fleet[agent_id].state.x, self.fleet[agent_id].state.y))
 
+        # -> Release task to agent if within radius of visibility
+        visibility_range = self.scenario.agent_dict[agent_id]["visibility_range"]
+
+        for goto_task in self.goto_tasks:
+            # -> If task already released, skip
+            if goto_task["id"] in self.tasks_released:
+                continue
+
+            # If task in range, update to release at next epoch
+            if new_state.x - visibility_range <= goto_task["instructions"]["x"] <= new_state.x + visibility_range and \
+                    new_state.y - visibility_range <= goto_task["instructions"]["y"] <= new_state.y + visibility_range:
+
+                goto_task["epoch"] = self.sim_epoch + 1
+
     def sim_events_instructions_callback(self, task_msg: TeamCommStamped):
         """
         Callback for task subscription.
@@ -276,6 +293,8 @@ class RLB_simple_sim(Node):
 
             # -> Publish task completion
             self.task_pub.publish(msg=task_msg)
+            self.task_pub.publish(msg=task_msg)
+            self.task_pub.publish(msg=task_msg)
 
             # -> If no action at location, do nothing
             if task_dict["instructions"]["ACTION_AT_LOC"] != "NO_TASK":
@@ -295,6 +314,8 @@ class RLB_simple_sim(Node):
                 )
 
                 # -> Publish action task
+                self.task_pub.publish(msg=action_task_msg)
+                self.task_pub.publish(msg=action_task_msg)
                 self.task_pub.publish(msg=action_task_msg)
 
                 # -> Save task in history
@@ -322,7 +343,7 @@ class RLB_simple_sim(Node):
         self.sim_epoch = sim_state["epoch"]
 
         for goto_task in self.goto_tasks:
-            if goto_task["epoch"] == self.sim_epoch:
+            if goto_task["epoch"] == self.sim_epoch:        # TODO: Add task release checking
                 task_msg = self.get_task_msg(
                     meta_action="pending",
                     agent_id=goto_task["creator_id"],
@@ -351,6 +372,10 @@ class RLB_simple_sim(Node):
 
                 # -> Publish instruction msg to robot
                 self.task_pub.publish(msg=task_msg)
+                self.task_pub.publish(msg=task_msg)
+                self.task_pub.publish(msg=task_msg)
+
+                self.tasks_released.append(goto_task["id"])
 
         # -> Log agent pose
         for agent in self.fleet:
@@ -407,6 +432,8 @@ class RLB_simple_sim(Node):
             if len(agents) > 1:
                 self.get_logger().warning(f"!!! Overlapping allocation of task {task} between {agents}")
 
+        terminate = False
+
         if len(self.results["allocation"]) == self.results["total_task_count"]:
             self.results["last_epoch"] = self.sim_epoch
             self.results["sim_end_time"] = datetime.now()
@@ -420,6 +447,12 @@ class RLB_simple_sim(Node):
             self.get_logger().info(f" >> Dumping results to file")
             self.results.dump_results()
 
+            terminate = True
+
+        elif self.sim_epoch >= 400:
+            terminate = True
+
+        if terminate:
             # -> Publish terminate simulator nodes signal
             for _ in range(10):
                 self.simulator_signals_pub.publish(msg=TeamCommStamped(
