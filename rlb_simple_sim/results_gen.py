@@ -9,7 +9,7 @@ from copy import deepcopy
 class Results:
     def __init__(self, fleet, scenario):
         self.results = {
-            "algo": "ICBAA",
+            "algo": "ICBBA",
             # -> Scenario
             "seed": scenario.seed,
             "env_size": scenario.env_size,
@@ -116,6 +116,25 @@ class Results:
             # Dump the dictionary to the file
             json.dump(self.results, file, indent=4, sort_keys=True)
             print(f"- Run results dumped to {run_results_file_path}")
+
+        import shutil
+
+        def move_file(source_dir, destination_dir, filename):
+            source_path = os.path.join(source_dir, filename)
+            destination_path = os.path.join(destination_dir, filename)
+
+            if os.path.exists(source_path):
+                shutil.move(source_path, destination_path)
+                print(f"File '{filename}' moved successfully.")
+            else:
+                print(f"File '{filename}' not found in '{source_dir}'.")
+
+        # Example usage
+        source_directory = f"{os.getcwd()}/src/rlb_simple_sim/rlb_simple_sim/Configs"
+        destination_directory = f"{os.getcwd()}/src/rlb_simple_sim/rlb_simple_sim/Configs_done"
+        file_name = self.results['sim_id']
+
+        move_file(source_directory, destination_directory, file_name)
 
     def generate_run_recap(self) -> str:
         """

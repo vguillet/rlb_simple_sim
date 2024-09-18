@@ -72,7 +72,7 @@ class RLB_simple_sim(Node):
         self.declare_parameters(
             namespace="",
             parameters=[
-                ("scenario_id", "simple_sim"),
+                ("scenario_id", "Scenario_0_full_intercession_no_recompute_0_interventionism_0.json"),
             ]
         )
 
