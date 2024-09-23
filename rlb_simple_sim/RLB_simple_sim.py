@@ -161,6 +161,8 @@ class RLB_simple_sim(Node):
                      priority,
                      task_type,
                      instructions,
+                     shared={},
+                     local={}
                      ) -> TeamCommStamped:
         """
         Generate a TeamCommStamped msg from a task dictionary.
@@ -173,7 +175,9 @@ class RLB_simple_sim(Node):
             instructions=instructions,
             affiliations=affiliations,
             priority=priority,
-            creation_timestamp=0
+            creation_timestamp=0,
+            shared=shared,
+            local=local
         )
 
         msg = TeamCommStamped()
@@ -296,7 +300,7 @@ class RLB_simple_sim(Node):
             self.task_pub.publish(msg=task_msg)
             self.task_pub.publish(msg=task_msg)
 
-            # -> If no action at location, do nothing
+            # -> If action task, construct corresponding ACTION task
             if task_dict["instructions"]["ACTION_AT_LOC"] != "NO_TASK":
                 # -> Construct corresponding ACTION task
                 action_task_msg = self.get_task_msg(
@@ -310,6 +314,9 @@ class RLB_simple_sim(Node):
                         "x": task_dict["instructions"]["x"],
                         "y": task_dict["instructions"]["y"],
                         "ACTION_AT_LOC": "NO_TASK"
+                    },
+                    shared={
+                        "intervention": task_dict["intervention"]
                     }
                 )
 
@@ -351,7 +358,10 @@ class RLB_simple_sim(Node):
                     affiliations=goto_task["affiliations"],
                     priority=goto_task["priority"],
                     task_type=goto_task["type"],
-                    instructions=goto_task["instructions"]
+                    instructions=goto_task["instructions"],
+                    shared={
+                        "intervention": goto_task["intervention"]
+                    }
                 )
 
                 print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
