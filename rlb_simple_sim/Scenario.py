@@ -66,7 +66,12 @@ class Scenario:
     def load_gridworld_scenario_config(self, scenario_config):
         self.seed = scenario_config["seed"]
         self.env_size = scenario_config["env_size"]
+
+        self.environment_type = scenario_config["environment_type"]
+        self.environment_path = scenario_config["environment_path"]
         self.env_connectivity = scenario_config["env_connectivity"]
+        self.env_size = scenario_config["env_size"]
+
         self.goto_tasks_count = scenario_config["goto_tasks_count"]
         self.tasks_types_ratios = scenario_config["tasks_types_ratios"]
         self.initial_tasks_announcement = scenario_config["initial_tasks_announcement"]

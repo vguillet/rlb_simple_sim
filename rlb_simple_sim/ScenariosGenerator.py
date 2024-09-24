@@ -20,6 +20,7 @@ CAF:
 
 # Built-in/Generic Imports
 import os
+import sys
 from abc import abstractmethod
 from typing import List, Optional
 from datetime import datetime, timedelta
@@ -29,15 +30,18 @@ import warnings
 from copy import deepcopy
 from math import ceil
 import random
-
-# Libs
 import numpy as np
 
-# Suppress FutureWarning messages
+# Libs
 
 # ROS2 Imports
 
 # Local Imports
+try:
+    from graph_env.graph_generator import generate_benchmark_layout
+
+except ModuleNotFoundError:
+    from graph_env.graph_env.graph_generator import generate_benchmark_layout
 
 ######################################################################################################
 
@@ -61,6 +65,14 @@ class ScenariosGenerator:
         self.intercession_target = "full"
 
         # ----- Environment
+        self.environment_type = "MAPF"              # MAPF, grid, random, star
+
+        # -> MAPF
+        if self.environment_type == "MAPF":
+            self.environment_path = "Paris_0_256.map"    # Only relevant for MAPF
+            self.graph, self.pos = generate_benchmark_layout(map_file=self.environment_path)
+
+        # -> grid, random, star
         self.env_connectivity_range = [.85, .85]
         self.env_size_range = [19, 19]
         # self.env_size_range = [9, 9]
@@ -249,9 +261,11 @@ class ScenariosGenerator:
         scenario_config_base = {
             "seed": self.seed,
             "scenario_id": scenario_id,
-            "scenario_type": "gridworld",
+            "environment_type": self.environment_type,
+            "environment_path": self.environment_path,
             "env_connectivity": env_connectivity,
             "env_size": env_size,
+
             "goto_tasks_count": goto_tasks_count,
             "initial_tasks_announcement": initial_tasks_announcement,
             "release_max_epoch": release_max_epoch,
@@ -402,11 +416,22 @@ class ScenariosGenerator:
                 "intervention": self.rng.choice([1, 0], p=[interventionism, 1-interventionism]),
                 "affiliations": "base",
                 "instructions": {
-                    "x": self.rng.randint(0, env_size-1),
-                    "y": self.rng.randint(0, env_size-1),
+                    "x": None,
+                    "y": None,
                     "ACTION_AT_LOC": action_at_loc
                 }
             }
+
+            if self.environment_type == "MAPF":
+                # -> Select a pos from the environment graph pos by generating a random index
+                pos_index = self.rng.randint(0, len(self.pos.keys()) - 1)
+                pos = list(self.pos.values())[pos_index]
+
+            else:
+                pos = (self.rng.randint(0, env_size-1), self.rng.randint(0, env_size-1))
+
+            task["instructions"]["x"] = pos[0]
+            task["instructions"]["y"] = pos[1]
 
             # -> Compute task euclidian distance from start
             task["euclidian_distance_from_start"] = np.sqrt(

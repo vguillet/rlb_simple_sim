@@ -1,7 +1,8 @@
 {
     "seed": 12,
     "scenario_id": "Scenario_0",
-    "scenario_type": "gridworld",
+    "environment_type": "MAPF",
+    "environment_path": "Paris_0_256.map",
     "env_connectivity": 0.85,
     "env_size": 19,
     "goto_tasks_count": 50,
@@ -63,15 +64,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 0,
-                "y": 0,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 72,
+                "y": 13,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 0.0
+            "euclidian_distance_from_start": 73.16419889536138
         },
         {
             "epoch": 0,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_4",
             "id": "1",
             "type": "GOTO",
             "meta_action": "pending",
@@ -79,15 +80,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 1,
-                "y": 0,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 60,
+                "y": 57,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 1.0
+            "euclidian_distance_from_start": 82.75868534480233
         },
         {
             "epoch": 0,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_1",
             "id": "2",
             "type": "GOTO",
             "meta_action": "pending",
@@ -95,15 +96,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 0,
-                "y": 2,
+                "x": 31,
+                "y": 84,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 2.0
+            "euclidian_distance_from_start": 89.5377015563835
         },
         {
             "epoch": 0,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_4",
             "id": "3",
             "type": "GOTO",
             "meta_action": "pending",
@@ -111,15 +112,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 1,
-                "y": 4,
+                "x": 20,
+                "y": 92,
                 "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 4.123105625617661
+            "euclidian_distance_from_start": 94.14881836751856
         },
         {
             "epoch": 0,
-            "creator_id": "Turtle_4",
+            "creator_id": "Turtle_2",
             "id": "4",
             "type": "GOTO",
             "meta_action": "pending",
@@ -127,15 +128,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 4,
-                "y": 4,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 46,
+                "y": 95,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 5.656854249492381
+            "euclidian_distance_from_start": 105.55093557141026
         },
         {
             "epoch": 3,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_2",
             "id": "5",
             "type": "GOTO",
             "meta_action": "pending",
@@ -143,15 +144,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 5,
-                "y": 4,
+                "x": 71,
+                "y": 81,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 6.4031242374328485
+            "euclidian_distance_from_start": 107.71258050942797
         },
         {
-            "epoch": 5,
-            "creator_id": "Turtle_4",
+            "epoch": 6,
+            "creator_id": "Turtle_2",
             "id": "6",
             "type": "GOTO",
             "meta_action": "pending",
@@ -159,15 +160,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 6,
-                "y": 5,
+                "x": 107,
+                "y": 20,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 7.810249675906654
+            "euclidian_distance_from_start": 108.85311203635843
         },
         {
-            "epoch": 7,
-            "creator_id": "Turtle_1",
+            "epoch": 9,
+            "creator_id": "Turtle_4",
             "id": "7",
             "type": "GOTO",
             "meta_action": "pending",
@@ -175,14 +176,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 5,
-                "y": 6,
+                "x": 111,
+                "y": 4,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 7.810249675906654
+            "euclidian_distance_from_start": 111.07204868912791
         },
         {
-            "epoch": 10,
+            "epoch": 12,
             "creator_id": "Turtle_4",
             "id": "8",
             "type": "GOTO",
@@ -191,14 +192,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 8,
-                "y": 0,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 66,
+                "y": 112,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 8.0
+            "euclidian_distance_from_start": 130.0
         },
         {
-            "epoch": 13,
+            "epoch": 14,
             "creator_id": "Turtle_1",
             "id": "9",
             "type": "GOTO",
@@ -207,15 +208,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 8,
-                "y": 1,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 122,
+                "y": 58,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 8.06225774829855
+            "euclidian_distance_from_start": 135.08515832614626
         },
         {
-            "epoch": 15,
-            "creator_id": "Turtle_2",
+            "epoch": 16,
+            "creator_id": "Turtle_4",
             "id": "10",
             "type": "GOTO",
             "meta_action": "pending",
@@ -223,15 +224,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 2,
-                "y": 9,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 6,
+                "y": 136,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 9.219544457292887
+            "euclidian_distance_from_start": 136.13228860193308
         },
         {
-            "epoch": 17,
-            "creator_id": "Turtle_2",
+            "epoch": 18,
+            "creator_id": "Turtle_4",
             "id": "11",
             "type": "GOTO",
             "meta_action": "pending",
@@ -239,14 +240,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 4,
+                "x": 152,
                 "y": 9,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 9.848857801796104
+            "euclidian_distance_from_start": 152.26621424334422
         },
         {
-            "epoch": 19,
+            "epoch": 20,
             "creator_id": "Turtle_1",
             "id": "12",
             "type": "GOTO",
@@ -255,15 +256,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 3,
-                "y": 10,
+                "x": 127,
+                "y": 85,
                 "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 10.44030650891055
+            "euclidian_distance_from_start": 152.8201557386983
         },
         {
-            "epoch": 21,
-            "creator_id": "Turtle_2",
+            "epoch": 23,
+            "creator_id": "Turtle_1",
             "id": "13",
             "type": "GOTO",
             "meta_action": "pending",
@@ -271,15 +272,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 8,
-                "y": 7,
+                "x": 65,
+                "y": 139,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 10.63014581273465
+            "euclidian_distance_from_start": 153.44705927452634
         },
         {
-            "epoch": 23,
-            "creator_id": "Turtle_3",
+            "epoch": 26,
+            "creator_id": "Turtle_1",
             "id": "14",
             "type": "GOTO",
             "meta_action": "pending",
@@ -287,15 +288,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 6,
-                "y": 9,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 80,
+                "y": 132,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 10.816653826391969
+            "euclidian_distance_from_start": 154.3502510525979
         },
         {
-            "epoch": 26,
-            "creator_id": "Turtle_4",
+            "epoch": 28,
+            "creator_id": "Turtle_1",
             "id": "15",
             "type": "GOTO",
             "meta_action": "pending",
@@ -303,15 +304,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 6,
-                "y": 10,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 134,
+                "y": 83,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 11.661903789690601
+            "euclidian_distance_from_start": 157.62296786953354
         },
         {
-            "epoch": 29,
-            "creator_id": "Turtle_1",
+            "epoch": 30,
+            "creator_id": "Turtle_4",
             "id": "16",
             "type": "GOTO",
             "meta_action": "pending",
@@ -319,15 +320,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 12,
-                "y": 1,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 115,
+                "y": 115,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 12.041594578792296
+            "euclidian_distance_from_start": 162.63455967290594
         },
         {
-            "epoch": 31,
-            "creator_id": "Turtle_1",
+            "epoch": 32,
+            "creator_id": "Turtle_2",
             "id": "17",
             "type": "GOTO",
             "meta_action": "pending",
@@ -335,15 +336,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 10,
-                "y": 7,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 115,
+                "y": 120,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 12.206555615733702
+            "euclidian_distance_from_start": 166.20770138594662
         },
         {
-            "epoch": 33,
-            "creator_id": "Turtle_2",
+            "epoch": 35,
+            "creator_id": "Turtle_3",
             "id": "18",
             "type": "GOTO",
             "meta_action": "pending",
@@ -351,15 +352,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 9,
-                "y": 9,
+                "x": 106,
+                "y": 142,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 12.727922061357855
+            "euclidian_distance_from_start": 177.2004514666935
         },
         {
-            "epoch": 36,
-            "creator_id": "Turtle_3",
+            "epoch": 38,
+            "creator_id": "Turtle_2",
             "id": "19",
             "type": "GOTO",
             "meta_action": "pending",
@@ -367,15 +368,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 12,
-                "y": 5,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 160,
+                "y": 79,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 13.0
+            "euclidian_distance_from_start": 178.44046626256053
         },
         {
-            "epoch": 39,
-            "creator_id": "Turtle_4",
+            "epoch": 40,
+            "creator_id": "Turtle_1",
             "id": "20",
             "type": "GOTO",
             "meta_action": "pending",
@@ -383,11 +384,11 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 13,
-                "y": 2,
+                "x": 129,
+                "y": 129,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 13.152946437965905
+            "euclidian_distance_from_start": 182.43354954612926
         },
         {
             "epoch": 42,
@@ -399,14 +400,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 9,
-                "y": 10,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 167,
+                "y": 81,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 13.45362404707371
+            "euclidian_distance_from_start": 185.60711193270586
         },
         {
-            "epoch": 45,
+            "epoch": 44,
             "creator_id": "Turtle_4",
             "id": "22",
             "type": "GOTO",
@@ -415,15 +416,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 10,
-                "y": 9,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 80,
+                "y": 171,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 13.45362404707371
+            "euclidian_distance_from_start": 188.7882411592417
         },
         {
             "epoch": 47,
-            "creator_id": "Turtle_1",
+            "creator_id": "Turtle_4",
             "id": "23",
             "type": "GOTO",
             "meta_action": "pending",
@@ -431,15 +432,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 14,
-                "y": 0,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 171,
+                "y": 83,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 14.0
+            "euclidian_distance_from_start": 190.07893097342483
         },
         {
             "epoch": 49,
-            "creator_id": "Turtle_4",
+            "creator_id": "Turtle_3",
             "id": "24",
             "type": "GOTO",
             "meta_action": "pending",
@@ -447,15 +448,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 11,
-                "y": 9,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 188,
+                "y": 58,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 14.212670403551895
+            "euclidian_distance_from_start": 196.74348782107123
         },
         {
-            "epoch": 51,
-            "creator_id": "Turtle_2",
+            "epoch": 52,
+            "creator_id": "Turtle_4",
             "id": "25",
             "type": "GOTO",
             "meta_action": "pending",
@@ -463,15 +464,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 14,
-                "y": 4,
+                "x": 184,
+                "y": 83,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 14.560219778561036
+            "euclidian_distance_from_start": 201.8539075668341
         },
         {
-            "epoch": 53,
-            "creator_id": "Turtle_4",
+            "epoch": 54,
+            "creator_id": "Turtle_2",
             "id": "26",
             "type": "GOTO",
             "meta_action": "pending",
@@ -479,14 +480,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 11,
-                "y": 10,
+                "x": 163,
+                "y": 122,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 14.866068747318506
+            "euclidian_distance_from_start": 203.60009823180343
         },
         {
-            "epoch": 55,
+            "epoch": 57,
             "creator_id": "Turtle_2",
             "id": "27",
             "type": "GOTO",
@@ -495,15 +496,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 15,
-                "y": 0,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 197,
+                "y": 61,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 15.0
+            "euclidian_distance_from_start": 206.22802913280242
         },
         {
-            "epoch": 58,
-            "creator_id": "Turtle_1",
+            "epoch": 59,
+            "creator_id": "Turtle_2",
             "id": "28",
             "type": "GOTO",
             "meta_action": "pending",
@@ -511,15 +512,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 2,
-                "y": 15,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 155,
+                "y": 142,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 15.132745950421556
+            "euclidian_distance_from_start": 210.21179795625173
         },
         {
             "epoch": 61,
-            "creator_id": "Turtle_2",
+            "creator_id": "Turtle_4",
             "id": "29",
             "type": "GOTO",
             "meta_action": "pending",
@@ -527,15 +528,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 6,
-                "y": 14,
+                "x": 15,
+                "y": 211,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 15.231546211727817
+            "euclidian_distance_from_start": 211.53250341259616
         },
         {
             "epoch": 63,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_1",
             "id": "30",
             "type": "GOTO",
             "meta_action": "pending",
@@ -543,11 +544,11 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 14,
-                "y": 6,
+                "x": 223,
+                "y": 34,
                 "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 15.231546211727817
+            "euclidian_distance_from_start": 225.5770378385176
         },
         {
             "epoch": 66,
@@ -559,15 +560,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 15,
-                "y": 3,
+                "x": 56,
+                "y": 229,
                 "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 15.297058540778355
+            "euclidian_distance_from_start": 235.74774654278247
         },
         {
-            "epoch": 68,
-            "creator_id": "Turtle_2",
+            "epoch": 69,
+            "creator_id": "Turtle_4",
             "id": "32",
             "type": "GOTO",
             "meta_action": "pending",
@@ -575,15 +576,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 5,
-                "y": 15,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 226,
+                "y": 73,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 15.811388300841896
+            "euclidian_distance_from_start": 237.49736840647307
         },
         {
-            "epoch": 70,
-            "creator_id": "Turtle_2",
+            "epoch": 72,
+            "creator_id": "Turtle_3",
             "id": "33",
             "type": "GOTO",
             "meta_action": "pending",
@@ -591,14 +592,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 13,
-                "y": 9,
+                "x": 99,
+                "y": 217,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 15.811388300841896
+            "euclidian_distance_from_start": 238.51624682608102
         },
         {
-            "epoch": 73,
+            "epoch": 74,
             "creator_id": "Turtle_1",
             "id": "34",
             "type": "GOTO",
@@ -607,15 +608,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 7,
-                "y": 15,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 238,
+                "y": 41,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 16.55294535724685
+            "euclidian_distance_from_start": 241.50569351466643
         },
         {
             "epoch": 76,
-            "creator_id": "Turtle_2",
+            "creator_id": "Turtle_1",
             "id": "35",
             "type": "GOTO",
             "meta_action": "pending",
@@ -623,15 +624,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 16,
-                "y": 5,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 108,
+                "y": 225,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 16.76305461424021
+            "euclidian_distance_from_start": 249.57764322951687
         },
         {
-            "epoch": 79,
-            "creator_id": "Turtle_1",
+            "epoch": 78,
+            "creator_id": "Turtle_2",
             "id": "36",
             "type": "GOTO",
             "meta_action": "pending",
@@ -639,14 +640,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 17,
-                "y": 0,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 79,
+                "y": 242,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 17.0
+            "euclidian_distance_from_start": 254.568261965234
         },
         {
-            "epoch": 81,
+            "epoch": 80,
             "creator_id": "Turtle_4",
             "id": "37",
             "type": "GOTO",
@@ -655,15 +656,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 14,
-                "y": 10,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 74,
+                "y": 245,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 17.204650534085253
+            "euclidian_distance_from_start": 255.93163149560078
         },
         {
-            "epoch": 84,
-            "creator_id": "Turtle_3",
+            "epoch": 83,
+            "creator_id": "Turtle_1",
             "id": "38",
             "type": "GOTO",
             "meta_action": "pending",
@@ -671,15 +672,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 17,
-                "y": 3,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 238,
+                "y": 98,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 17.26267650163207
+            "euclidian_distance_from_start": 257.3868683519033
         },
         {
-            "epoch": 86,
-            "creator_id": "Turtle_1",
+            "epoch": 85,
+            "creator_id": "Turtle_2",
             "id": "39",
             "type": "GOTO",
             "meta_action": "pending",
@@ -687,15 +688,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 4,
-                "y": 17,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 81,
+                "y": 245,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 17.46424919657298
+            "euclidian_distance_from_start": 258.0426321366297
         },
         {
-            "epoch": 89,
-            "creator_id": "Turtle_2",
+            "epoch": 88,
+            "creator_id": "Turtle_4",
             "id": "40",
             "type": "GOTO",
             "meta_action": "pending",
@@ -703,15 +704,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 8,
-                "y": 16,
+                "x": 254,
+                "y": 49,
                 "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 17.88854381999832
+            "euclidian_distance_from_start": 258.68320393871727
         },
         {
-            "epoch": 92,
-            "creator_id": "Turtle_4",
+            "epoch": 90,
+            "creator_id": "Turtle_1",
             "id": "41",
             "type": "GOTO",
             "meta_action": "pending",
@@ -719,15 +720,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 8,
-                "y": 16,
+                "x": 150,
+                "y": 215,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 17.88854381999832
+            "euclidian_distance_from_start": 262.15453457836657
         },
         {
-            "epoch": 94,
-            "creator_id": "Turtle_2",
+            "epoch": 92,
+            "creator_id": "Turtle_1",
             "id": "42",
             "type": "GOTO",
             "meta_action": "pending",
@@ -735,14 +736,14 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 16,
-                "y": 10,
-                "ACTION_AT_LOC": "ACTION_1"
+                "x": 200,
+                "y": 179,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 18.867962264113206
+            "euclidian_distance_from_start": 268.40454541605664
         },
         {
-            "epoch": 96,
+            "epoch": 95,
             "creator_id": "Turtle_3",
             "id": "43",
             "type": "GOTO",
@@ -751,15 +752,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 12,
-                "y": 15,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 178,
+                "y": 204,
+                "ACTION_AT_LOC": "NO_TASK"
             },
-            "euclidian_distance_from_start": 19.209372712298546
+            "euclidian_distance_from_start": 270.7397274136177
         },
         {
-            "epoch": 99,
-            "creator_id": "Turtle_2",
+            "epoch": 97,
+            "creator_id": "Turtle_1",
             "id": "44",
             "type": "GOTO",
             "meta_action": "pending",
@@ -767,15 +768,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 16,
-                "y": 11,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 190,
+                "y": 200,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 19.4164878389476
+            "euclidian_distance_from_start": 275.86228448267445
         },
         {
             "epoch": 100,
-            "creator_id": "Turtle_4",
+            "creator_id": "Turtle_1",
             "id": "45",
             "type": "GOTO",
             "meta_action": "pending",
@@ -783,15 +784,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 13,
-                "y": 15,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 233,
+                "y": 169,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 19.849433241279208
+            "euclidian_distance_from_start": 287.8367592924851
         },
         {
             "epoch": 100,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_1",
             "id": "46",
             "type": "GOTO",
             "meta_action": "pending",
@@ -799,15 +800,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 16,
-                "y": 12,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 252,
+                "y": 170,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 20.0
+            "euclidian_distance_from_start": 303.98026251715754
         },
         {
             "epoch": 100,
-            "creator_id": "Turtle_3",
+            "creator_id": "Turtle_4",
             "id": "47",
             "type": "GOTO",
             "meta_action": "pending",
@@ -815,15 +816,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 16,
-                "y": 12,
-                "ACTION_AT_LOC": "NO_TASK"
+                "x": 195,
+                "y": 246,
+                "ACTION_AT_LOC": "ACTION_2"
             },
-            "euclidian_distance_from_start": 20.0
+            "euclidian_distance_from_start": 313.91240816508036
         },
         {
             "epoch": 100,
-            "creator_id": "Turtle_1",
+            "creator_id": "Turtle_3",
             "id": "48",
             "type": "GOTO",
             "meta_action": "pending",
@@ -831,15 +832,15 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 17,
-                "y": 13,
+                "x": 199,
+                "y": 248,
                 "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 21.400934559032695
+            "euclidian_distance_from_start": 317.9701243827791
         },
         {
             "epoch": 100,
-            "creator_id": "Turtle_4",
+            "creator_id": "Turtle_1",
             "id": "49",
             "type": "GOTO",
             "meta_action": "pending",
@@ -847,11 +848,11 @@
             "intervention": 1,
             "affiliations": "base",
             "instructions": {
-                "x": 15,
-                "y": 16,
-                "ACTION_AT_LOC": "ACTION_2"
+                "x": 249,
+                "y": 207,
+                "ACTION_AT_LOC": "ACTION_1"
             },
-            "euclidian_distance_from_start": 21.93171219946131
+            "euclidian_distance_from_start": 323.80549717384355
         }
     ],
     "no_tasks_count": 10,

@@ -1,0 +1,64 @@
+
+============================ Run Recap ============================
+>> Sim id: Scenario_0_full_intercession_recompute_0.json
+>> Recompute: Yes
+>> With intercession: Yes
+
+------ Sim Stats ------
+Sim duration: 0:12:14.203956
+Average time per epoch: 0:00:03.151090
+Allocations count completed: 100
+Last task completion epoch: 232
+
+------ Tardiness ------
+
+Total cumulated tardiness: 1706
+  > GOTO cumulated tardiness: 1578
+  > ACTION cumulated tardiness: 128
+
+Total average tardiness: 17.59
+  > GOTO average tardiness: 31.56
+  > ACTION average tardiness: 2.56
+
+Total max tardiness: 197
+  > GOTO max tardiness: 197
+  > ACTION max tardiness: 52
+
+------ Displacement ------
+Cumulated move count: 932
+Max move count: 233 moves for agent Turtle_2
+
+------ Fleet messages ------
+Total fleet messages count: 5344
+
+------ Allocation ------
+Matched allocation: 42/50 (84.0%)
+Miss-matched allocation: 8/50 (16.0%)
+
+------ Scenario config ------
+Environment size: 19
+Environment connectivity: 0.85
+
+Tasks count: 100
+  GOTOs: 50
+    > 0 NO_TASK
+    > 25 ACTION_1
+    > 25 ACTION_2
+Initial tasks announcement: 0.1
+Release max epoch: 100
+
+Agents: 4 agents
+  > Turtle_1
+    - Skillset: ['GOTO', 'ACTION_1']
+    - Bid function: anticipated_action_task_interceding_agent
+  > Turtle_2
+    - Skillset: ['GOTO', 'ACTION_1']
+    - Bid function: graph_weighted_manhattan_distance_bid
+  > Turtle_3
+    - Skillset: ['GOTO', 'ACTION_2']
+    - Bid function: graph_weighted_manhattan_distance_bid
+  > Turtle_4
+    - Skillset: ['GOTO', 'ACTION_2']
+    - Bid function: graph_weighted_manhattan_distance_bid
+
+==================================================================
