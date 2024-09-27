@@ -424,7 +424,7 @@ class ScenariosGenerator:
 
             if self.environment_type == "MAPF":
                 # -> Select a pos from the environment graph pos by generating a random index
-                pos_index = self.rng.randint(0, len(self.pos.keys()) - 1)
+                pos_index = self.rng.randint(0, len(self.pos.items()) - 1)
                 pos = list(self.pos.values())[pos_index]
 
             else:
