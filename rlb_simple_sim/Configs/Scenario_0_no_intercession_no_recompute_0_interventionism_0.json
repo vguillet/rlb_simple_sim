@@ -20,16 +20,6 @@
         "Turtle_3": 1,
         "Turtle_4": 1
     },
-    "recompute_bids_on_state_change": false,
-    "with_interceding": false,
-    "fleet_bids_mechanisms": {
-        "Turtle_1": "graph_weighted_manhattan_distance_bid",
-        "Turtle_2": "graph_weighted_manhattan_distance_bid",
-        "Turtle_3": "graph_weighted_manhattan_distance_bid",
-        "Turtle_4": "graph_weighted_manhattan_distance_bid"
-    },
-    "intercession_targets": [],
-    "interventionism": 0.0,
     "tasks_types_ratios": [
         0,
         25,
@@ -858,5 +848,15 @@
     "no_tasks_count": 0,
     "action_1_tasks_count": 25,
     "action_2_tasks_count": 25,
+    "recompute_bids_on_state_change": false,
+    "with_interceding": false,
+    "fleet_bids_mechanisms": {
+        "Turtle_1": "graph_weighted_manhattan_distance_bid",
+        "Turtle_2": "graph_weighted_manhattan_distance_bid",
+        "Turtle_3": "graph_weighted_manhattan_distance_bid",
+        "Turtle_4": "graph_weighted_manhattan_distance_bid"
+    },
+    "intercession_targets": [],
+    "interventionism": 0.0,
     "scenario_ref": "Scenario_0_no_intercession_no_recompute_0_interventionism_0"
 }

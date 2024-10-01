@@ -305,75 +305,73 @@ class ScenariosGenerator:
             scenarios[scenario_config_base["scenario_id"]] = scenario_config_base
 
         else:
-            # --------------------------------- Loop for recompute on change
-            for i in range(2):
-                scenario_config_1 = deepcopy(scenario_config_base)
+            # --------------------------------- Loop for tasks types ratios
+            for k in range(len(self.tasks_count_config)):
+                scenario_config_tasks_types = deepcopy(scenario_config_base)
 
-                scenario_config_1["recompute_bids_on_state_change"] = bool(i)
+                scenario_config_tasks_types["tasks_types_ratios"] = self.tasks_count_config[k]
 
-                # --------------------------------- Loop for intercession
-                for j in self.intercession_targets.keys():
-                    scenario_config_2 = deepcopy(scenario_config_1)
+                # -> Add fleet skillset
+                if self.tasks_count_config[k] == [10, 39, 1]:
+                    scenario_config_tasks_types["fleet_skillsets"] = self.fleets_skillsets[1]
+                else:
+                    scenario_config_tasks_types["fleet_skillsets"] = self.fleets_skillsets[0]
 
-                    if j == "no":
-                        scenario_config_2["with_interceding"] = False
-                        scenario_config_2["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["no_interceding"]
+                # -> Generate tasks
+                no_tasks_count = self.tasks_count_config[k][0]
+                action_1_tasks_count = self.tasks_count_config[k][1]
+                action_2_tasks_count = self.tasks_count_config[k][2]
 
-                    else:
-                        scenario_config_2["with_interceding"] = True
-                        scenario_config_2["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms["interceding"]
+                scenario_config_tasks_types["goto_tasks"] = self.generate_tasks(
+                    env_size=env_size,
+                    goto_tasks_count=goto_tasks_count,
+                    no_tasks_count=no_tasks_count,
+                    action_1_tasks_count=action_1_tasks_count,
+                    action_2_tasks_count=action_2_tasks_count,
+                    initial_tasks_announcement=initial_tasks_announcement,
+                    release_max_epoch=release_max_epoch,
+                    interventionism=0.0
+                )
 
-                    scenario_config_2["intercession_targets"] = self.intercession_targets[j]
+                scenario_config_tasks_types["no_tasks_count"] = no_tasks_count
+                scenario_config_tasks_types["action_1_tasks_count"] = action_1_tasks_count
+                scenario_config_tasks_types["action_2_tasks_count"] = action_2_tasks_count
+                scenario_config_tasks_types["tasks_types_ratios"] = self.tasks_count_config[k]
 
-                    # --------------------------------- Loop for interventionism
-                    for interventionism in self.intercession_rates:
-                        scenario_config_3 = deepcopy(scenario_config_2)
+                # --------------------------------- Loop for recompute on change
+                for i in range(2):
+                    scenario_config_recompute = deepcopy(scenario_config_tasks_types)
 
-                        scenario_config_3["interventionism"] = interventionism
+                    scenario_config_recompute["recompute_bids_on_state_change"] = bool(i)
 
-                        # --------------------------------- Loop for tasks types ratios
-                        for k in range(len(self.tasks_count_config)):
-                            scenario_config_4 = deepcopy(scenario_config_3)
+                    # --------------------------------- Loop for intercession targets
+                    for j in self.intercession_targets.keys():
+                        scenario_config_intercession_targets = deepcopy(scenario_config_recompute)
 
-                            scenario_config_4["tasks_types_ratios"] = self.tasks_count_config[k]
+                        if j == "no":
+                            scenario_config_intercession_targets["with_interceding"] = False
+                            scenario_config_intercession_targets["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms[
+                                "no_interceding"]
 
-                            # -> Add fleet skillset
-                            if self.tasks_count_config[k] == [10, 39, 1]:
-                                scenario_config_4["fleet_skillsets"] = self.fleets_skillsets[1]
-                            else:
-                                scenario_config_4["fleet_skillsets"] = self.fleets_skillsets[0]
+                        else:
+                            scenario_config_intercession_targets["with_interceding"] = True
+                            scenario_config_intercession_targets["fleet_bids_mechanisms"] = self.fleet_bids_mechanisms[
+                                "interceding"]
 
-                            # -> Generate tasks
-                            scenario_config_4["goto_tasks"] = self.generate_tasks(
-                                env_size=env_size,
-                                goto_tasks_count=goto_tasks_count,
-                                no_tasks_count=self.tasks_count_config[k][0],
-                                action_1_tasks_count=self.tasks_count_config[k][1],
-                                action_2_tasks_count=self.tasks_count_config[k][2],
-                                initial_tasks_announcement=initial_tasks_announcement,
-                                release_max_epoch=release_max_epoch,
-                                interventionism=interventionism
-                            )
+                        scenario_config_intercession_targets["intercession_targets"] = self.intercession_targets[j]
 
-                            no_tasks_count = 0
-                            action_1_tasks_count = 0
-                            action_2_tasks_count = 0
+                        # --------------------------------- Loop for interventionism
+                        for interventionism in self.intercession_rates:
+                            scenario_config_interventionism = deepcopy(scenario_config_intercession_targets)
 
-                            for task in scenario_config_4["goto_tasks"]:
-                                if task["instructions"]["ACTION_AT_LOC"] == "NO_TASK":
-                                    no_tasks_count += 1
-                                elif task["instructions"]["ACTION_AT_LOC"] == "ACTION_1":
-                                    action_1_tasks_count += 1
-                                elif task["instructions"]["ACTION_AT_LOC"] == "ACTION_2":
-                                    action_2_tasks_count += 1
+                            scenario_config_interventionism["interventionism"] = interventionism
 
-                            scenario_config_4["no_tasks_count"] = no_tasks_count
-                            scenario_config_4["action_1_tasks_count"] = action_1_tasks_count
-                            scenario_config_4["action_2_tasks_count"] = action_2_tasks_count
-                            scenario_config_4["tasks_types_ratios"] = self.tasks_count_config[k]
+                            # -> Set interventionism flag for the tasks
+                            for task in scenario_config_interventionism["goto_tasks"]:
+                                task["intervention"] = self.rng.choice([1, 0], p=[interventionism, 1 - interventionism])
 
                             # --------------------------------- Save scenario
-                            scenario_config_final = scenario_config_4
+                            scenario_config_final = scenario_config_interventionism
 
                             # -> Construct scenario_ref
                             scenario_config_final["scenario_ref"] = scenario_config_base['scenario_id']
