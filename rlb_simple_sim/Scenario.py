@@ -95,7 +95,7 @@ class Scenario:
         for agent in self.agent_lst:
             self.agent_dict[agent] = {
                 "skillset": self.fleet_skillsets[agent],
-                "visibility range": self.visibility_ranges[agent],
+                "visibility_ranges": self.visibility_ranges[agent],
                 "bid mechanism": self.fleet_bids_mechanisms[agent]
             }
 

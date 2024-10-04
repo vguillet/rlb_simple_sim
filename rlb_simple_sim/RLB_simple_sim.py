@@ -2,20 +2,7 @@
 ##################################################################################################################
 
 """
-Parent class for the CAF framework. To use, the following must be defined in the child class:
-MAF:
-    Optional:
-    - on_set_state
-
-CAF:
-    - message_to_publish(self) (property)
-    - process_msg(self, msg)
-    - next_state(self) (property)
-    # - action_to_take(self) (property)
-    # - process_step(self, obs, reward, done, infos)
-
-    Optional:
-    - on_new_task(self, task_id, task_data)
+Task manager, also logs all sim events and results
 """
 
 # Built-in/Generic Imports
@@ -161,8 +148,8 @@ class RLB_simple_sim(Node):
                      priority,
                      task_type,
                      instructions,
-                     shared={},
-                     local={}
+                     shared=dict,
+                     local=dict
                      ) -> TeamCommStamped:
         """
         Generate a TeamCommStamped msg from a task dictionary.
@@ -260,7 +247,7 @@ class RLB_simple_sim(Node):
             self.results['move_history'][agent_id].append((self.fleet[agent_id].state.x, self.fleet[agent_id].state.y))
 
         # -> Release task to agent if within radius of visibility
-        visibility_range = self.scenario.agent_dict[agent_id]["visibility_range"]
+        visibility_range = self.scenario.agent_dict[agent_id]["visibility_ranges"]
 
         for goto_task in self.goto_tasks:
             # -> If task already released, skip
@@ -284,7 +271,8 @@ class RLB_simple_sim(Node):
         # -> Unpack msg
         task_dict = loads(task_msg.memo)
 
-        if task_msg.meta_action == "completed": # TODO: Add support for more meta actions
+        if task_msg.meta_action == "completed" and self.results["task_history"][task_dict["id"]]["termination_epoch"] is None: # TODO: Add support for more meta actions
+            # self.get_logger().info(f"SIMPLE SIM - Task {task_dict['id']} completed")
             # -> Save termination epoch
             self.results["task_history"][task_dict["id"]]["termination_epoch"] = self.sim_epoch
 
@@ -297,8 +285,8 @@ class RLB_simple_sim(Node):
 
             # -> Publish task completion
             self.task_pub.publish(msg=task_msg)
-            self.task_pub.publish(msg=task_msg)
-            self.task_pub.publish(msg=task_msg)
+            # self.task_pub.publish(msg=task_msg)
+            # self.task_pub.publish(msg=task_msg)
 
             # -> If action task, construct corresponding ACTION task
             if task_dict["instructions"]["ACTION_AT_LOC"] != "NO_TASK":
@@ -316,7 +304,7 @@ class RLB_simple_sim(Node):
                         "ACTION_AT_LOC": "NO_TASK"
                     },
                     shared={
-                        "intervention": task_dict["intervention"]
+                        "intervention": task_dict["shared"]["intervention"]
                     }
                 )
 
@@ -349,6 +337,9 @@ class RLB_simple_sim(Node):
 
         self.sim_epoch = sim_state["epoch"]
 
+        new_task_msgs = ""
+        msg_backlog = []
+
         for goto_task in self.goto_tasks:
             if goto_task["epoch"] == self.sim_epoch:        # TODO: Add task release checking
                 task_msg = self.get_task_msg(
@@ -364,9 +355,7 @@ class RLB_simple_sim(Node):
                     }
                 )
 
-                print(f"\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-                print(f"++ EPOCH {self.sim_epoch}: Task {goto_task['id']} > {goto_task['type']} emitted: {goto_task['instructions']} for {goto_task['creator_id']} ++")
-                print(f"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+                new_task_msgs += f"\n++ EPOCH {self.sim_epoch}: Task {goto_task['id']} > {goto_task['type']} emitted: {goto_task['instructions']} for {goto_task['creator_id']} ++"
 
                 # -> Save task in history
                 self.results["task_history"][goto_task["id"]] = {
@@ -381,11 +370,13 @@ class RLB_simple_sim(Node):
                 }
 
                 # -> Publish instruction msg to robot
-                self.task_pub.publish(msg=task_msg)
-                self.task_pub.publish(msg=task_msg)
-                self.task_pub.publish(msg=task_msg)
+                msg_backlog.append(deepcopy(task_msg))
 
                 self.tasks_released.append(goto_task["id"])
+
+        if new_task_msgs != "":
+            new_task_msgs = f"\n\n++++++++++++++++++++++++++++++++++++" + new_task_msgs
+            new_task_msgs += f"\n++++++++++++++++++++++++++++++++++++"
 
         # -> Log agent pose
         for agent in self.fleet:
@@ -398,17 +389,15 @@ class RLB_simple_sim(Node):
         except ValueError:
             longest_moves = 0
 
-        self.get_logger().info(f"-------------------------------------------")
-        self.get_logger().info(f" > Sim step {self.sim_epoch}")
-        self.get_logger().info(f"    -  Total moves: {total_moves}")
-        self.get_logger().info(
-            f"    -  Longest move: {longest_moves} ({[agent.id for agent in self.fleet if len(self.results['move_history'][agent.id]) == longest_moves]})")
-        self.get_logger().info(f"    -  Total fleet messages: {self.results['total_fleet_msgs_count']}")
-        self.get_logger().info(
-            f"    -  Total allocations completed: {len(self.results['allocation'])}/{self.results['total_task_count']}")
-        self.get_logger().info(f" Runtime: {datetime.now() - self.results['sim_start_time']}")
-        self.get_logger().info(f"-----------------")
-        self.get_logger().info(f"Current goals:")
+        sim_epoch_overview = ""
+        sim_epoch_overview += f"\n > Sim step {self.sim_epoch}"
+        sim_epoch_overview += f"\n    -  Total moves: {total_moves}"
+        sim_epoch_overview += f"\n    -  Longest move: {longest_moves} ({[agent.id for agent in self.fleet if len(self.results['move_history'][agent.id]) == longest_moves]})"
+        sim_epoch_overview += f"\n    -  Total fleet messages: {self.results['total_fleet_msgs_count']}"
+        sim_epoch_overview += f"\n    -  Total allocations completed: {len(self.results['allocation'])}/{self.results['total_task_count']}"
+        sim_epoch_overview += f"\n Runtime: {datetime.now() - self.results['sim_start_time']}"
+        sim_epoch_overview += f"\n\n------------------------------------"
+        sim_epoch_overview += f"\n\n> Current goals:"
 
         for agent in self.fleet:
             if agent.plan is not None:
@@ -426,9 +415,12 @@ class RLB_simple_sim(Node):
                     else:
                         self.get_logger().warning(f"!!! Unknown action type for task {task_id}")
 
-                self.get_logger().info(f"    - {agent.id}: {agent.plan.task_sequence}\n > No action: {no_action_tasks}\n > Action 1: {action_1_tasks}\n > Action 2: {action_2_tasks}")
+                sim_epoch_overview += (f"\n    - {agent.id}:                              {repr(agent.plan)}"
+                                       f"\n         * No action: {no_action_tasks}"
+                                       f"\n         * Action 1: {action_1_tasks}"
+                                       f"\n         * Action 2: {action_2_tasks}")
 
-        # -> FInd all doubles
+        # -> Find all doubles
         doubles = {}
         for agent in self.fleet:
             if agent.plan is not None:
@@ -442,6 +434,18 @@ class RLB_simple_sim(Node):
             if len(agents) > 1:
                 self.get_logger().warning(f"!!! Overlapping allocation of task {task} between {agents}")
 
+        # -> Print logs
+        full_logs = "\n==========================================================================="
+        full_logs += f"{sim_epoch_overview}{new_task_msgs}"
+        full_logs += "\n==========================================================================="
+        full_logs += f"\n\n"
+        self.get_logger().info(full_logs)
+
+        # -> Publish task messages
+        for msg in msg_backlog:
+            self.task_pub.publish(msg=msg)
+
+        # ================================================================================ Termination Overview
         terminate = False
 
         if len(self.results["allocation"]) == self.results["total_task_count"]:

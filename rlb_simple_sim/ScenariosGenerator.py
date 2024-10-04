@@ -65,12 +65,15 @@ class ScenariosGenerator:
         self.intercession_target = "full"
 
         # ----- Environment
-        self.environment_type = "MAPF"              # MAPF, grid, random, star
+        self.environment_type = "grid"              # MAPF, grid, random, star
 
         # -> MAPF
         if self.environment_type == "MAPF":
             self.environment_path = "Paris_0_256.map"    # Only relevant for MAPF
             self.graph, self.pos = generate_benchmark_layout(map_file=self.environment_path)
+
+        else:
+            self.environment_path = None
 
         # -> grid, random, star
         self.env_connectivity_range = [.85, .85]
@@ -104,7 +107,7 @@ class ScenariosGenerator:
             "full": ["ACTION_1", "ACTION_2", "NO_TASK"]
         }
 
-        self.intercession_rates = np.linspace(0, 1, 5, dtype=float)
+        self.intercession_rates = np.round(np.linspace(0, 1, 10, dtype=float), 1)
 
         self.visibility_ranges = [
             {
@@ -211,7 +214,7 @@ class ScenariosGenerator:
                 action_2_tasks_count=tasks_types_ratios_configs[2][i],
                 initial_tasks_announcement=initial_tasks_announcement_configs[i],
                 release_max_epoch=release_max_epoch_configs[i],
-                fleets_visibility_ranges = self.visibility_ranges[fleets_visibility_ranges_configs[i]],
+                fleets_visibility_ranges=self.visibility_ranges[fleets_visibility_ranges_configs[i]],
                 fleet_skillsets=self.fleets_skillsets[fleets_skillsets_configs[i]],
                 gen_type=gen_type,
                 save_to_file=save_to_file
@@ -492,7 +495,7 @@ def convert_numpy_int64(o):
 
 
 if __name__ == "__main__":
-    datasets_count = 1
+    datasets_count = 10
 
     sg = ScenariosGenerator(datasets_count)
     scenarios = sg.gen_scenarios_config(
