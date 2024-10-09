@@ -19,17 +19,8 @@ CAF:
 """
 
 # Built-in/Generic Imports
-import os
-import sys
-from abc import abstractmethod
-from typing import List, Optional
 from datetime import datetime, timedelta
-from json import dumps, loads
-from pprint import pprint, pformat
-import warnings
 from copy import deepcopy
-from math import ceil
-import random
 import numpy as np
 
 # Libs
@@ -38,9 +29,11 @@ import numpy as np
 
 # Local Imports
 try:
+    from maaf_tools.tools import *
     from graph_env.graph_generator import generate_benchmark_layout
 
-except ModuleNotFoundError:
+except ImportError:
+    from maaf_tools.maaf_tools.tools import *
     from graph_env.graph_env.graph_generator import generate_benchmark_layout
 
 ######################################################################################################
@@ -102,7 +95,7 @@ class ScenariosGenerator:
         #self.skills = ["GOTO", "ACTION_1", "ACTION_2"]
 
         self.intercession_targets = {
-            "no": [],
+            # "no": [],
             "partial": ["ACTION_1", "NO_TASK"],
             "full": ["ACTION_1", "ACTION_2", "NO_TASK"]
         }
@@ -378,10 +371,11 @@ class ScenariosGenerator:
 
                             # -> Construct scenario_ref
                             scenario_config_final["scenario_ref"] = scenario_config_base['scenario_id']
+                            scenario_config_final["scenario_ref"] += f"_{k}"
                             scenario_config_final["scenario_ref"] += f"_{j}_intercession"
                             scenario_config_final["scenario_ref"] += "_no" if not bool(i) else ""
                             scenario_config_final["scenario_ref"] += "_recompute"
-                            scenario_config_final["scenario_ref"] += f"_{k}"
+
                             scenario_config_final["scenario_ref"] += f"_interventionism_{int(100 * interventionism)}"
                             scenarios[f'{scenario_config_final["scenario_ref"]}'] = scenario_config_final
 
@@ -505,6 +499,6 @@ if __name__ == "__main__":
 
     print(f"Generated {len(scenarios)} scenarios")
     # Define time delta as 1:30
-    single_run_time = timedelta(seconds=1*60+30)
+    single_run_time = timedelta(seconds=4*60+30)
 
-    print(f"Estimated time for {datasets_count} datasets: {single_run_time * datasets_count * 6*5}")
+    print(f"Estimated time for {datasets_count} datasets: {single_run_time * datasets_count * 160}")

@@ -2,13 +2,20 @@
 from datetime import datetime
 import os
 import json
-from orchestra_config.sim_config import *
 from copy import deepcopy
+
+try:
+    from orchestra_config.sim_config import *
+
+except ImportError:
+    from orchestra_config.orchestra_config.sim_config import *
 
 
 class Results:
     def __init__(self, fleet, scenario):
         self.results = {
+            "scenario_config": scenario.scenario_config,    # Full scenario config
+
             "algo": "ICBBA",
             # -> Scenario
             "seed": scenario.seed,

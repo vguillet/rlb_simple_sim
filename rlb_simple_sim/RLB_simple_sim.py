@@ -8,20 +8,13 @@ Task manager, also logs all sim events and results
 # Built-in/Generic Imports
 import os
 import sys
-from abc import abstractmethod
-from typing import List, Optional
 from datetime import datetime, timedelta
-from json import dumps, loads
-from pprint import pprint, pformat
 import warnings
 from copy import deepcopy
-from math import ceil
 from functools import partial
 import time
 
 # Libs
-import numpy as np
-import pandas as pd
 
 # Suppress FutureWarning messages
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -29,24 +22,40 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # ROS2 Imports
 import rclpy
 from rclpy.node import Node
-from rclpy.time import Time
 from geometry_msgs.msg import Twist, PoseStamped, Point
-import numpy as np
 
 # Local Imports
-from orchestra_config.orchestra_config import *     # KEEP THIS LINE, DO NOT REMOVE
-from maaf_msgs.msg import TeamCommStamped
-from .Scenario import Scenario
+try:
+    from orchestra_config.orchestra_config import *     # KEEP THIS LINE, DO NOT REMOVE
+    from maaf_msgs.msg import TeamCommStamped
+    from .Scenario import Scenario
 
-from maaf_tools.datastructures.task.Task import Task
-from maaf_tools.datastructures.task.TaskLog import TaskLog
+    from maaf_tools.tools import *
+    from maaf_tools.datastructures.task.Task import Task
+    from maaf_tools.datastructures.task.TaskLog import TaskLog
 
-from maaf_tools.datastructures.agent.Agent import Agent
-from maaf_tools.datastructures.agent.Fleet import Fleet
-from maaf_tools.datastructures.agent.AgentState import AgentState
+    from maaf_tools.datastructures.agent.Agent import Agent
+    from maaf_tools.datastructures.agent.Fleet import Fleet
+    from maaf_tools.datastructures.agent.AgentState import AgentState
 
-from maaf_tools.tools import euler_from_quaternion
-from .results_gen import Results
+    from maaf_tools.tools import euler_from_quaternion
+    from .results_gen import Results
+
+except ImportError:
+    from orchestra_config.orchestra_config.orchestra_config import *  # KEEP THIS LINE, DO NOT REMOVE
+    from maaf_msgs.msg import TeamCommStamped
+    from .Scenario import Scenario
+
+    from maaf_tools.maaf_tools.tools import *
+    from maaf_tools.maaf_tools.datastructures.task.Task import Task
+    from maaf_tools.maaf_tools.datastructures.task.TaskLog import TaskLog
+
+    from maaf_tools.maaf_tools.datastructures.agent.Agent import Agent
+    from maaf_tools.maaf_tools.datastructures.agent.Fleet import Fleet
+    from maaf_tools.maaf_tools.datastructures.agent.AgentState import AgentState
+
+    from maaf_tools.maaf_tools.tools import euler_from_quaternion
+    from .results_gen import Results
 
 ######################################################################################################
 
@@ -369,7 +378,7 @@ class RLB_simple_sim(Node):
                     "termination_epoch": None,
                 }
 
-                # -> Publish instruction msg to robot
+                # -> Queue task message for publishing
                 msg_backlog.append(deepcopy(task_msg))
 
                 self.tasks_released.append(goto_task["id"])

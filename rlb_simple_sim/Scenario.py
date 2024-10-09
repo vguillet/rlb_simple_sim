@@ -1,9 +1,14 @@
 
-from json import dumps, loads
 from pprint import pprint, pformat
 import pathlib
 
-from .ScenariosGenerator import ScenariosGenerator
+try:
+    from maaf_tools.tools import *
+    from .ScenariosGenerator import ScenariosGenerator
+
+except ImportError:
+    from maaf_tools.maaf_tools.tools import *
+    from rlb_simple_sim.rlb_simple_sim.ScenariosGenerator import ScenariosGenerator
 
 
 class Scenario:
@@ -38,12 +43,12 @@ class Scenario:
 
             with open(f"/home/vguillet/ros2_ws/src/rlb_simple_sim/rlb_simple_sim/Configs/{scenario_id}",
                       "r") as f:
-                scenario_config = loads(f.read())
+                self.scenario_config = loads(f.read())
 
-                self.load_gridworld_scenario_config(scenario_config)
+                self.load_gridworld_scenario_config(self.scenario_config)
 
         elif not load_only:
-            scenario_config = ScenariosGenerator().gen_scenario_config(
+            self.scenario_config = ScenariosGenerator().gen_scenario_config(
                 scenario_id=scenario_id,
                 env_size=env_size,
                 env_connectivity=env_connectivity,
@@ -58,7 +63,7 @@ class Scenario:
                 save_to_file=False
             )[scenario_id]
 
-            self.load_gridworld_scenario_config(scenario_config)
+            self.load_gridworld_scenario_config(self.scenario_config)
 
         else:
             raise FileNotFoundError(f"Scenario config file not found: {scenario_id}")
